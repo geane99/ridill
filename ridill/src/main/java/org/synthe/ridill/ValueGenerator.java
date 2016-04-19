@@ -1,4 +1,4 @@
-package org.synthe.ridill.core;
+package org.synthe.ridill;
 
 import java.util.List;
 
@@ -9,9 +9,9 @@ import java.util.List;
  * {@code
  * @Override
  * public String getString(TargetInfo info){
- *   if(info.isProperty() && info.propertyName().toLowerCase().contain("firstname"))
+ *   if(info.isProperty() && info.name().toLowerCase().contain("firstname"))
  *     return "foo";
- *   if(info.isProperty() && info.propertyName().toLowerCase().contain("lastname"))
+ *   if(info.isProperty() && info.name().toLowerCase().contain("lastname"))
  *     return "bar";
  *   .
  *   .

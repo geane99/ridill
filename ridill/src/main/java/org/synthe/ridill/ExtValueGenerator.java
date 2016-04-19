@@ -1,4 +1,4 @@
-package org.synthe.ridill.core;
+package org.synthe.ridill;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,7 +15,7 @@ import org.synthe.ridill.reflect.ReflectionInfo;
  * {@code
  * @Override
  * public String get(ReflectionInfo info){
- *   if(info.type().equals(Member.class) && info.field().getName().equals("firstName"))
+ *   if(info.templateName().equals(Member.class.getName()) && info.name().equals("firstName"))
  *     return "foobar";
  *   .
  *   .
@@ -32,9 +32,10 @@ public interface ExtValueGenerator{
 	 * @since 2015/01/18
  	 * @version 1.0.0
 	 * @param info information of the generated value.
+	 * @param enclosingInstance instance of property enclosing instance
 	 * @return generated value
 	 */
-	public Object get(ReflectionInfo info);
+	public Object get(ReflectionInfo info, Object enclosingInstance);
 	/**
 	 * generate collection#size
 	 * @since 2015/01/18

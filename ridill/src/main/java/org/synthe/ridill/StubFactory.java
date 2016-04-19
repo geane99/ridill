@@ -1,4 +1,4 @@
-package org.synthe.ridill.core;
+package org.synthe.ridill;
 
 import java.lang.reflect.Proxy;
 import java.util.Collection;

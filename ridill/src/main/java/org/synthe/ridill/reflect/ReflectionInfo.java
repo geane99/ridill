@@ -1,39 +1,29 @@
 package org.synthe.ridill.reflect;
 
-import org.synthe.ridill.core.TargetInfo;
+import org.synthe.ridill.TargetInfo;
 
 public class ReflectionInfo {
-	private ClassInfo<?> _typeInfo;
-	
-//	public Field field(){
-//		return (Field)_typeInfo.owner();
-//	}
+	private PropertyTemplate _template;
 	
 	public String className(){
-		return _typeInfo.type().getName();
+		return _template.templateName();
 	}
-	
 	public Class<?>[] interfaces(){
-		return _typeInfo.type().getInterfaces();
+		return _template.template().getInterfaces();
 	}
 	ClassType classType(){
-		return _typeInfo.classType();
+		return _template.classType();
 	}
-
 	public boolean isImmutable(){
-		return _typeInfo.isImmutable();
+		return _template.isImmutable();
 	}
-	
-	public TargetInfo getTargetInfo(){
-		//TODO impl
-		return null;
+	public TargetInfo toTargetInfo(Object instance){
+		return _template.toTargetInfo(instance);
 	}
-	
-	public void set(Object instance, Object val){
-		
+	public void set(Object instance, Object val) throws IllegalAccessException{
+		_template.set(instance, val);
 	}
-	
 	public Object newInstance(){
-		return _typeInfo.newInstance();
+		return _template.newInstance();
 	}
 }

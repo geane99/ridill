@@ -1,55 +1,64 @@
 package org.synthe.ridill.reflect;
 
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Member;
-import java.lang.reflect.Modifier;
 
-class ClassInfo<T extends AccessibleObject> {
-	protected Class<?> _type;
+abstract class Template{
+	protected Class<?> _template;
+	protected Template[] _typeParameters;
 	protected ClassType _classType;
-	protected T _owner;
-	protected ClassInfo<?>[] _parameters;
-	protected ClassOwnerType _ownerType;
+	protected TemplateType _templateType;
+	protected Template _enclosing;
 	
-	public ClassInfo(T owner, ClassOwnerType ownerType){
-		_owner = owner;
-		_ownerType = ownerType;
+	
+	public Template enclosing(){
+		return _enclosing;
 	}
 	
-	public T owner(){
-		return _owner;
+	public Class<?> template(){
+		return _template; 
 	}
 	
-	public Class<?> type(){
-		return _type; 
+	public TemplateType templateType(){
+		return _templateType;
 	}
 	
 	public ClassType classType(){
 		return _classType;
 	}
 	
-	public boolean isImmutable(){
-		return 
-			_ownerType == ClassOwnerType.property && 
-			_owner instanceof Member && 
-			Modifier.isFinal(((Member)_owner).getModifiers());
-	}
 	public Object newInstance(){
 		//TODO impl
-		return null;
+		return new Object();
+	}
+	
+	public String templateName(){
+		return _template.getName();
+	}
+	
+	public boolean isImmutable(){
+		return false;
+//		return 
+//			_ownerType == TemplateType.property && 
+//			_owner instanceof Member && 
+//			Modifier.isFinal(((Member)_owner).getModifiers());
 	}
 	
 	public boolean isProperty(){
-		return _ownerType == ClassOwnerType.property;
+		return _templateType == TemplateType.property;
 	}
 	public boolean isReturnValue(){
-		return _ownerType == ClassOwnerType.returnValue;
+		return _templateType == TemplateType.returnValue;
+	}
+	public boolean isMethodArgument(){
+		return _templateType == TemplateType.methodArgument;
+	}
+	public boolean isMethodTypeParameter(){
+		return _templateType == TemplateType.methodTypeParameter;
 	}
 	public boolean isTypeParameter(){
-		return _ownerType == ClassOwnerType.typeParameter;
-	}
-	public boolean isNormalClass(){
-		return _ownerType == ClassOwnerType.itself;
+		return _templateType == 
+			TemplateType.methodTypeParameter || 
+			_templateType == TemplateType.itsetfTypeParameters || 
+			_templateType == TemplateType.propertyTypeParameters;
 	}
 	public boolean isInterface(){
 		return _classType == ClassType.interfaceType;
@@ -85,12 +94,12 @@ class ClassInfo<T extends AccessibleObject> {
 		return _classType == ClassType.enumType;
 	}
 	public boolean isLocalClass(){
-		return _type.isLocalClass();
+		return _template.isLocalClass();
 	}
 	public boolean isMemberClass(){
-		return _type.isMemberClass();
+		return _template.isMemberClass();
 	}
 	public boolean isAnonymousClass(){
-		return _type.isAnonymousClass();
+		return _template.isAnonymousClass();
 	}
 }

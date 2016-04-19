@@ -6,7 +6,7 @@ package org.synthe.ridill.reflect;
  * @since 2015/01/18
  * @version 1.0.0
  */
-enum ClassOwnerType {
+enum TemplateType {
 	/**
 	 * belongs to the class itself
 	 * @since 2015/01/18
@@ -14,17 +14,39 @@ enum ClassOwnerType {
 	 */
 	itself,
 	/**
+	 * belongs to the class itself type parameters
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	itsetfTypeParameters,
+	/**
 	 * belongs to the property
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 */
 	property,
 	/**
-	 * belongs to the return value
+	 * belongs to the type parameters of property 
+	 */
+	propertyTypeParameters,
+	/**
+	 * belongs to the returnValue
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 */
 	returnValue,
+	/**
+	 * belongs to the argument of method
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	methodArgument,
+	/**
+	 * belongs to the type parameters of method
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	methodTypeParameter,
 	/**
 	 * belongs to the type parameter
 	 * @since 2015/01/18
