@@ -1,10 +1,9 @@
-package org.synthe.ridill.reflect;
+package org.synthe.ridill.generator;
 
 import java.util.List;
 
-import org.synthe.ridill.ExtValueGenerator;
-import org.synthe.ridill.TargetInfo;
-import org.synthe.ridill.ValueGenerator;
+import org.synthe.ridill.reflect.ClassType;
+import org.synthe.ridill.reflect.ReflectionInfo;
 
 /**
  * Class that the connection to {@link ValueGenerator} or {@link ExtValueGenerator} in generating value.
@@ -12,7 +11,7 @@ import org.synthe.ridill.ValueGenerator;
  * @since 2015/01/18
  * @version 1.0.0
  */
-class InternalGenerator {
+class InternalGenerator{
 	/**
 	 * see {@link ExtValueGenerator}
 	 * @since 2015/01/18
@@ -69,7 +68,7 @@ class InternalGenerator {
 	 * @param enclosingInstance instance of enclosing class.
 	 * @return generated value
 	 */
-	public Object generateEmbedValue(ReflectionInfo info, Object enclosingInstance){
+	public Object getEmbedValue(ReflectionInfo info, Object enclosingInstance){
 		if(isSimple()){
 			TargetInfo gi = info.toTargetInfo(enclosingInstance);
 			
@@ -91,7 +90,7 @@ class InternalGenerator {
 				return _generator.getCharacter(gi);
 			if(info.classType() == ClassType.stringType)
 				return _generator.getString(gi);
-			return generateObjectValue(info, enclosingInstance);
+			return getObjectValue(info, enclosingInstance);
 		}
 		
 		return _extValueGenerator.get(info, enclosingInstance);
@@ -104,7 +103,8 @@ class InternalGenerator {
 	 * @param info {@link ReflectionInfo}
 	 * @param enclosingInstance instance of enclosing class.
 	 * @return generated value
-	 */	public Object generateObjectValue(ReflectionInfo info, Object enclosingInstance){
+	 */
+	public Object getObjectValue(ReflectionInfo info, Object enclosingInstance){
 		if(isSimple())
 			return new Object();
 		return _extValueGenerator.get(info, enclosingInstance);
@@ -119,7 +119,7 @@ class InternalGenerator {
 	 * @return generated value
 	 */
 	@SuppressWarnings("unchecked")
-	public Object generateEnumValue(ReflectionInfo info, Object enclosingInstance){
+	public Object getEnumValue(ReflectionInfo info, Object enclosingInstance){
 		if(isSimple()){
 			TargetInfo gi = info.toTargetInfo(enclosingInstance);
 			List<Enum<?>> enums = (List<Enum<?>>)info.newInstance();

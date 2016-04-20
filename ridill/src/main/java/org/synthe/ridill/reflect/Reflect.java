@@ -1,37 +1,25 @@
 package org.synthe.ridill.reflect;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.synthe.ridill.ExtValueGenerator;
-import org.synthe.ridill.StubFactory;
-import org.synthe.ridill.ValueGenerator;
-
-public class ReflectionObject {
+public class Reflect {
 	
-	private Map<ClassType, InternalGeneratorStrategy> _factoryCache;
-	private _ReflectionCache _rcache;
+	private Map<ClassType, InternalAdapterStrategy> _factoryCache;
+	private _Cache _rcache;
 	private ClassLoader _loader;
-	private InternalGenerator _generator;
-	private ValueGenerator _valueGenerator;
-	private ExtValueGenerator _extValueGenerator;
+	private Adapter _adapter;
 	
 	
-	public ReflectionObject(ClassLoader loader, ValueGenerator generator){
+	public Reflect(ClassLoader loader, Adapter adapter){
 		_loader = loader;
-		_generator = new InternalGenerator(generator);
-		_valueGenerator = generator;
+		_adapter = adapter;
 		_initialize();
 	}
 	
-	public ReflectionObject(ClassLoader loader, ExtValueGenerator generator){
-		_loader = loader;
-		_generator = new InternalGenerator(generator);
-		_extValueGenerator = generator;
-		_initialize();
-	}
-
 	private void _initialize(){
 		_factoryCache = new HashMap<>();
 		_factoryCache.put(ClassType.objectType, new _ObjectStrategy());
@@ -56,26 +44,30 @@ public class ReflectionObject {
 //		_factoryCache.put(ClassType.mapType, new _DictionaryStrategy());
 		_factoryCache.put(ClassType.arrayType, new _ArrayStrategy());
 		_factoryCache.put(ClassType.domainType, new _DomainStrategy());
-		_rcache = new _ReflectionCache();
+		_rcache = new _Cache();
 	}
 	
 	public Object reflect(Object proxy, Method method, Object[] args){
+		return reflect(proxy, method, 0, args);
+	}
+	
+	public Object reflect(Object instance, Method method, Integer depth, Object...args){
 		Class<?> target = method.getReturnType();
 		ReflectionInfo info = !_rcache.has(target) ?
-			ReflectionInfoFactory.returnType(proxy, method, args):
+			ReflectionInfoFactory.returnType(instance, method, args):
 			_rcache.get(target);
-		return _reflect(info, _generator, proxy);
+		return _reflect(info, _adapter, instance, depth);
 	}
 
 	
 	/* --------------------------------------------------------- */
 	/* private method                                            */
 	/* --------------------------------------------------------- */
-	private Object _reflect(ReflectionInfo info, InternalGenerator adapter, Object instance){
-		return _selectFactory(info).create(info, adapter, instance);
+	private Object _reflect(ReflectionInfo info, Adapter adapter, Object instance, Integer depth){
+		return _selectFactory(info).command(info, adapter, instance, depth);
 	}
 
-	private InternalGeneratorStrategy _selectFactory(ReflectionInfo info){
+	private InternalAdapterStrategy _selectFactory(ReflectionInfo info){
 		return _factoryCache.get(info.classType());
 	}
 	
@@ -87,14 +79,14 @@ public class ReflectionObject {
 	/* strategy for create object & set value                    */
 	/* --------------------------------------------------------- */
 	
-	class _DomainStrategy implements InternalGeneratorStrategy{
+	class _DomainStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object create(ReflectionInfo info, InternalGenerator adapter, Object enclosingInstance) {
+		public Object command(ReflectionInfo info, Adapter adapter, Object enclosingInstance, Integer depth) {
 			Object target = info.newInstance();
 			for(ReflectionInfo each : ReflectionInfoFactory.fieldTypeAll(info)){
 				if(each.isImmutable())
 					continue;
-				Object val = _reflect(each,adapter,target);
+				Object val = _reflect(each,adapter,target, depth + 1);
 				try{
 					info.set(target, val);
 				}
@@ -106,65 +98,67 @@ public class ReflectionObject {
 		}
 	}
 	
-	class _ArrayStrategy implements InternalGeneratorStrategy{
+	class _ArrayStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object create(ReflectionInfo info, InternalGenerator adapter, Object enclosingInstance) {
+		public Object command(ReflectionInfo info, Adapter adapter, Object enclosingInstance, Integer depth) {
 			Object[] arrays = (Object[])info.newInstance();
 			for(int i = 0; i < arrays.length; i++)
 				//TODO impl
-				arrays[i] = _reflect(info, adapter, enclosingInstance);
+				arrays[i] = _reflect(info, adapter, enclosingInstance, depth + 1);
 			return arrays;
 		}
 	}
 	
-	class _ProxyStrategy implements InternalGeneratorStrategy{
+	class _ProxyStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object create(ReflectionInfo info, InternalGenerator adapter, Object enclosingInstance) {
-			StubFactory factory = new StubFactory();
-			if(_extValueGenerator == null)
-				return factory.create(
-					_loader, 
-					_valueGenerator,
-					info.interfaces()
-				);
-			return factory.create(
+		public Object command(ReflectionInfo info, Adapter adapter, Object enclosingInstance, Integer depth) {
+			return Proxy.newProxyInstance(
 				_loader, 
-				_extValueGenerator,
-				info.interfaces()
+				info.interfaces(), 
+				new _InnerInvocationHandlerImpl(adapter, depth)
 			);
-//			return Proxy.newProxyInstance(
-//				_loader, 
-//				info.interfaces(), 
-//				new  ReflectionObjectAdapter(_loader, adapter._adptGenerator)
-//			);
+		}
+		
+		class _InnerInvocationHandlerImpl implements InvocationHandler{
+			private Adapter __adapter;
+			private Integer __depth;
+			_InnerInvocationHandlerImpl(Adapter adapter, Integer depth){
+				__adapter = adapter;
+				__depth = depth;
+			}
+			@Override
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+				Reflect obj = new Reflect(_loader, __adapter);
+				return obj.reflect(proxy, method, __depth, args);
+			}
 		}
 	}
 	
-	class _AbstractStrategy implements InternalGeneratorStrategy{
+	class _AbstractStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object create(ReflectionInfo info, InternalGenerator adapter, Object enclosingInstance) {
+		public Object command(ReflectionInfo info, Adapter adapter, Object enclosingInstance, Integer depth) {
 			return info.newInstance();
 		}
 	}
 	
-	class _EnumStrategy implements InternalGeneratorStrategy{
+	class _EnumStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object create(ReflectionInfo info, InternalGenerator adapter, Object enclosingInstance) {
-			return adapter.generateEnumValue(info,enclosingInstance);
+		public Object command(ReflectionInfo info, Adapter adapter, Object enclosingInstance, Integer depth) {
+			return adapter.getEnumValue(info,enclosingInstance,depth);
 		}
 	}
 	
-	class _ObjectStrategy implements InternalGeneratorStrategy{
+	class _ObjectStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object create(ReflectionInfo info, InternalGenerator adapter, Object enclosingInstance) {
-			return adapter.generateObjectValue(info,enclosingInstance);
+		public Object command(ReflectionInfo info, Adapter adapter, Object enclosingInstance, Integer depth) {
+			return adapter.getObjectValue(info,enclosingInstance,depth);
 		}
 	}
 	
-	class _EmbedStrategy implements InternalGeneratorStrategy{
+	class _EmbedStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object create(ReflectionInfo info, InternalGenerator adapter, Object enclosingInstance) {
-			return adapter.generateEmbedValue(info,enclosingInstance);
+		public Object command(ReflectionInfo info, Adapter adapter, Object enclosingInstance, Integer depth) {
+			return adapter.getEmbedValue(info,enclosingInstance,depth);
 		}
 	}
 		
@@ -233,9 +227,9 @@ public class ReflectionObject {
 	/* --------------------------------------------------------- */
 	/* reflection cache mecanism                                 */
 	/* --------------------------------------------------------- */
-	class _ReflectionCache{
+	class _Cache{
 		volatile Map<String,ReflectionInfo> _store;
-		public _ReflectionCache(){
+		public _Cache(){
 			_store = new HashMap<>();
 		}
 		public boolean has(Class<?> clazz){

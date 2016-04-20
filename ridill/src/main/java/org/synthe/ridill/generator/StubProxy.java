@@ -1,9 +1,9 @@
-package org.synthe.ridill;
+package org.synthe.ridill.generator;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import org.synthe.ridill.reflect.ReflectionObject;
+import org.synthe.ridill.reflect.Reflect;
 
 /**
  * InvocationHandler implementation.
@@ -64,9 +64,10 @@ class StubProxy implements InvocationHandler{
 	 */
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		ReflectionObject obj = _extGenerator != null ? 
-			new ReflectionObject(_loader, _extGenerator) :
-			new ReflectionObject(_loader, _generator);
+		InternalGenerator generator = _extGenerator != null ? 
+			new InternalGenerator(_extGenerator):
+			new InternalGenerator(_generator);
+		Reflect obj = new Reflect(_loader, new GeneratorAdapter(generator));
 		return obj.reflect(proxy, method, args);
 	}
 }
