@@ -1,5 +1,10 @@
 package org.synthe.ridill.reflect;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.synthe.ridill.generator.TargetInfo;
+
 
 /**
  * Class that provides type information.<br/>
@@ -8,7 +13,7 @@ package org.synthe.ridill.reflect;
  * @since 2015/01/18
  * @version 1.0.0
  */
-abstract class Template{
+public abstract class Template{
 	/**
 	 * target class
 	 * @since 2015/01/18
@@ -20,7 +25,7 @@ abstract class Template{
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 */
-	protected Template[] _typeParameters;
+	protected List<Template> _typeParameters;
 	/**
 	 * type information for target
 	 * @since 2015/01/18
@@ -39,15 +44,31 @@ abstract class Template{
 	 * @version 1.0.0
 	 */
 	protected Template _enclosing;
-	
 	/**
-	 * Get enclosing of target class
+	 * convert to public object
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param instance instance of target class
+	 * @return {@link TargetInfo public object}
+	 */
+	abstract public TargetInfo toTargetInfo(Object instance);
+	/**
+	 * getter enclosing
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @return enclosing of target class
 	 */
 	public Template enclosing(){
 		return _enclosing;
+	}
+	/**
+	 * setter enclosing
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param enclosing enclosing of target class
+	 */
+	public void enclosing(Template enclosing){
+		_enclosing = enclosing;
 	}
 	/**
 	 * return target class
@@ -96,12 +117,68 @@ abstract class Template{
 		return _template.getName();
 	}
 	/**
+	 * getter type parameters
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return type parameters
+	 */
+	public List<Template> typeParameters(){
+		return _typeParameters;
+	}
+	/**
+	 * setter type parameters
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param typeParameters type parameters
+	 */
+	public void typeParameters(List<Template> typeParameters){
+		_typeParameters = typeParameters;
+	}
+	/**
+	 * get type parameter at index.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param index array index
+	 * @return {@link Template}
+	 */
+	public Template typeParameterAt(Integer index){
+		return _typeParameters.get(index);
+	}
+	/**
+	 * add type parameter 
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param typeParameter {@link Template}
+	 */
+	public void addTypeParameter(Template typeParameter){
+		if(_typeParameters == null)
+			_typeParameters = new ArrayList<>();
+		_typeParameters.add(typeParameter);
+	}
+	/**
+	 * return type parameters isnt empty.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when type parameters isnot empty, return true.
+	 */
+	public Boolean hasTypeParameters(){
+		return _typeParameters != null && _typeParameters.size() > 0;
+	}
+	/**
+	 * remove all type parameters
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	public void clearTypeParameters(){
+		_typeParameters = new ArrayList<>();
+	}
+	/**
 	 * return target is immutalbe
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @return when target is immutable, return true.
 	 */
-	public boolean isImmutable(){
+	public Boolean isImmutable(){
 		return false;
 //		return 
 //			_ownerType == TemplateType.property && 
@@ -114,9 +191,22 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is field, return true.
 	 */
-	public boolean isProperty(){
+	public Boolean isProperty(){
 		return _templateType == TemplateType.property;
 	}
+	/**
+	 * return target is method
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when target is method arg or method type parameter or return value, return true.
+	 */
+	public Boolean isMethod(){
+		return 
+			_templateType == TemplateType.methodArgument ||
+			_templateType == TemplateType.methodTypeParameter ||
+			_templateType == TemplateType.returnValue;
+	}
+	
 	/**
 	 * return target is type parameter<br/>
 	 * type parameter of<br/>
@@ -127,7 +217,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is type parameter, return true.
 	 */
-	public boolean isTypeParameter(){
+	public Boolean isTypeParameter(){
 		return _templateType == 
 			TemplateType.methodTypeParameter || 
 			_templateType == TemplateType.itsetfTypeParameters || 
@@ -139,7 +229,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is interface, return true.
 	 */
-	public boolean isInterface(){
+	public Boolean isInterface(){
 		return _classType == ClassType.interfaceType;
 	}
 	/**
@@ -148,7 +238,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is abstract, return true.
 	 */
-	public boolean isAbstract(){
+	public Boolean isAbstract(){
 		return _classType == ClassType.abstractType;
 	}
 	/**
@@ -157,7 +247,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is annotation, return true.
 	 */
-	public boolean isAnnotation(){
+	public Boolean isAnnotation(){
 		return _classType == ClassType.annotationType;
 	}
 	/**
@@ -166,7 +256,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is object, return true.
 	 */
-	public boolean isObject(){
+	public Boolean isObject(){
 		return _classType == ClassType.objectType;
 	}
 	/**
@@ -175,7 +265,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is array, return true.
 	 */
-	public boolean isArray(){
+	public Boolean isArray(){
 		return _classType == ClassType.arrayType;
 	}
 	/**
@@ -184,7 +274,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is enum, return true.
 	 */
-	public boolean isEnum(){
+	public Boolean isEnum(){
 		return _classType == ClassType.enumType;
 	}
 	/**
@@ -193,7 +283,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is local class, return true.
 	 */
-	public boolean isLocalClass(){
+	public Boolean isLocalClass(){
 		return _template.isLocalClass();
 	}
 	/**
@@ -202,7 +292,7 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is member class, return true.
 	 */
-	public boolean isMemberClass(){
+	public Boolean isMemberClass(){
 		return _template.isMemberClass();
 	}
 	/**
@@ -211,8 +301,28 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return when target is anonymous class, return true.
 	 */
-	public boolean isAnonymousClass(){
+	public Boolean isAnonymousClass(){
 		return _template.isAnonymousClass();
+	}
+	/**
+	 * return target is primitive or primitive wrapper
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when target is primitive or primitive wrapper, return true
+	 */
+	public Boolean isEmbedClass(){
+		return 
+			_classType == ClassType.booleanType ||
+			_classType == ClassType.byteType ||
+			_classType == ClassType.characterType ||
+			_classType == ClassType.doubleType ||
+			_classType == ClassType.floatType ||
+			_classType == ClassType.integerType ||
+			_classType == ClassType.longType ||
+			_classType == ClassType.objectType ||
+			_classType == ClassType.nativeType ||
+			_classType == ClassType.shortType ||
+			_classType == ClassType.stringType;
 	}
 //	public boolean isList(){
 //		return _classType == ClassType.listType;

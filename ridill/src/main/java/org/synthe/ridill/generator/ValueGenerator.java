@@ -1,4 +1,4 @@
-package org.synthe.ridill;
+package org.synthe.ridill.generator;
 
 import java.util.List;
 

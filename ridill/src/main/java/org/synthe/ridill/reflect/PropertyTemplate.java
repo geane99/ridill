@@ -5,8 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.synthe.ridill.TargetInfo;
-
 /**
  * Class that provides type information.<br/>
  * Template provides {@link AccessibleObject} information.
@@ -51,14 +49,6 @@ abstract class PropertyTemplate extends Template{
 	 * @throws IllegalAccessException when cant access property, thrown {@link IllegalAccessException}
 	 */
 	abstract public Object invoke(Object instance, Object...args) throws InvocationTargetException, IllegalAccessException;
-	/**
-	 * convert to public object
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 * @param instance instance of target class
-	 * @return {@link TargetInfo public object}
-	 */
-	abstract public TargetInfo toTargetInfo(Object instance);
 	/**
 	 * set access to true
 	 * @since 2015/01/18

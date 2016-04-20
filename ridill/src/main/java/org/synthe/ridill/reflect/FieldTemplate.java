@@ -3,7 +3,7 @@ package org.synthe.ridill.reflect;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
-import org.synthe.ridill.TargetInfo;
+import org.synthe.ridill.generator.TargetInfo;
 
 /**
  * Class that provides type information.<br/>
@@ -19,15 +19,34 @@ class FieldTemplate extends PropertyTemplate{
 	 * @version 1.0.0
 	 */
 	private Field _field;
+	
+	private Template _child;
+	
 	/**
 	 * constructor
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @param field {@link Field}
 	 */
-	public FieldTemplate(Field field){
+	public FieldTemplate(Field field, Class<?> template){
 		_field = field;
+		_template = template;
+		_templateType = TemplateType.property;
+		_classType = ClassType.get(template);
 		setAccessControl(_field);
+	}
+	public Template child(){
+		return _child;
+	}
+	public void child(Template child){
+		_child = child;
+		_child._template = template();
+		_child._typeParameters = _typeParameters;
+	}
+	
+	public void real(Template template){
+		_template = template.template();
+		_typeParameters = template.typeParameters();
 	}
 	/*
 	 * (non-Javadoc)

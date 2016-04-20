@@ -3,7 +3,7 @@ package org.synthe.ridill.reflect;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.synthe.ridill.TargetInfo;
+import org.synthe.ridill.generator.TargetInfo;
 
 /**
  * Class that provides type information.<br/>

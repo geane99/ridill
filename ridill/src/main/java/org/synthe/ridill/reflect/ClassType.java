@@ -13,7 +13,7 @@ import java.util.Set;
  * @since 2015/01/18
  * @version 1.0.0
  */
-enum ClassType {
+public enum ClassType {
 	/**
 	 * type of {@link Object}
 	 * @since 2015/01/18
@@ -146,6 +146,12 @@ enum ClassType {
 	 * @version 1.0.0
 	 */
 	nativeType,
+	/**
+	 * generics type parameter
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	typeVariable,
 	;
 	
 	/**
