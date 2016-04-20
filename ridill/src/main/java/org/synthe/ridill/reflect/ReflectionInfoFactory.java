@@ -108,7 +108,10 @@ class ReflectionInfoFactory {
 						int index = 0;
 						for(TypeVariable<?> each : superGenericsTypeDifinition){
 							Template superClassTypeParameterDifinisionTemplate = baseType(each, superClassDifinition, TemplateType.itsetfTypeParameters);
-							classTypeParameters.put(superClassTypeParameterDifinisionTemplate.templateName(), superGenericsTypeTemplate.typeParameterAt(index++));
+							Template pairClassTypeParameterParameterizedTypeTemplate = superGenericsTypeTemplate.typeParameterAt(index++);
+							classTypeParameters.put(superClassTypeParameterDifinisionTemplate.templateName(), pairClassTypeParameterParameterizedTypeTemplate);
+							enclosing.addParameterizedType(now, superClassTypeParameterDifinisionTemplate, pairClassTypeParameterParameterizedTypeTemplate);
+							
 						}
 					}
 				}

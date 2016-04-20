@@ -1,7 +1,9 @@
 package org.synthe.ridill.reflect;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.synthe.ridill.generator.TargetInfo;
 
@@ -44,6 +46,59 @@ public abstract class Template{
 	 * @version 1.0.0
 	 */
 	protected Template _enclosing;
+	/**
+	 * set In generics definition and parameterized type are paired<br/>
+	 * <pre>
+	 * {@code
+	 *   Map<String,Template> thisClassGenericParameters = _parameterizedTypStore.get(_tempalte.getName()); //mean "Class#getName()"
+	 *   Map<String,Template> superClassGenericsParameters = _parameterizedTypStore.get(_tempalte.getSuperclass().getName());
+	 *   
+	 *   thisClassGenericParameters.put("K", keyTemplate);
+	 *   thisClassGenericParameters.put("V", valueTemplate);
+	 * }
+	 * </pre>
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	protected Map<String, Map<String,Template>> _parameterizedTypes;
+	/**
+	 * put a pair of generics definition and parameterized type to target class.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param enclosing target class
+	 * @param typeVariable generics definition
+	 * @param real parameterized type
+	 */
+	public void addParameterizedType(Class<?> enclosing, Template typeVariable, Template real){
+		if(_parameterizedTypes == null)
+			_parameterizedTypes = new HashMap<>();
+		String enclosingName = enclosing.getName();
+		
+		Map<String,Template> targetTemplateParameterizedTypes = _parameterizedTypes.get(enclosingName);
+		if(targetTemplateParameterizedTypes == null){
+			targetTemplateParameterizedTypes = new HashMap<>();
+			_parameterizedTypes.put(enclosingName, targetTemplateParameterizedTypes);
+		}
+		targetTemplateParameterizedTypes.put(typeVariable.templateName(), real);
+	}
+	/**
+	 * find pairs generics definition and parameterized type contained in target class.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param typeVariable generics definition
+	 * @return parameterized type, which is a generics definition and a pair
+	 */
+	public Template findEnclosingParameterizedTypeByTypeVariable(Template typeVariable){
+		Class<?> target = _template;
+		while(target != null){
+			Map<String,Template> targetTemplateParameterizedTypes = _parameterizedTypes.get(target.getName());
+			if(targetTemplateParameterizedTypes != null && targetTemplateParameterizedTypes.containsKey(typeVariable.templateName()))
+				return targetTemplateParameterizedTypes.get(typeVariable.templateName());
+			target = target.getSuperclass();
+		}
+		return null;
+	}
+	
 	/**
 	 * convert to public object
 	 * @since 2015/01/18
