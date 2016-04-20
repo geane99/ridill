@@ -120,7 +120,7 @@ class MethodTemplate extends PropertyTemplate{
 		 * @see org.synthe.ridill.TargetInfo#eclosingClassName()
 		 */
 		@Override
-		public String eclosingClassName() {
+		public String enclosingClassName() {
 			return _info.enclosing().templateName();
 		}
 		/*

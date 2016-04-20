@@ -82,6 +82,19 @@ public abstract class Template{
 		targetTemplateParameterizedTypes.put(typeVariable.templateName(), real);
 	}
 	/**
+	 * put a pair of generics definition and parameterized type to target class.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param enclosing target class
+	 * @param real parameterized types
+	 */
+	public void addRealParameterizedTypes(Class<?> enclosing, Map<String, Template> realParameterizedTypes){
+		if(_parameterizedTypes == null)
+			_parameterizedTypes = new HashMap<>();
+		_parameterizedTypes.put(enclosing.getName(), realParameterizedTypes);
+	}
+	
+	/**
 	 * find pairs generics definition and parameterized type contained in target class.
 	 * @since 2015/01/18
 	 * @version 1.0.0
