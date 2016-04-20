@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class ReflectionInfoFactory {
+class TemplateFactory {
 	public static ReflectionInfo returnType(Object proxy, Method method, Object[] params){
 		Class<?> returnType = method.getReturnType();
 		
@@ -55,7 +55,7 @@ class ReflectionInfoFactory {
 	}
 	
 	public static Template typeVariableType(Template enclosing, TypeVariable<?> parameterType, TemplateType templateType){
-		ParameterTemplate param = new ParameterTemplate(templateType, parameterType, enclosing);
+		TypeParameterTemplate param = new TypeParameterTemplate(templateType, parameterType, enclosing);
 		return param;
 	}
 	
@@ -108,7 +108,10 @@ class ReflectionInfoFactory {
 						int index = 0;
 						for(TypeVariable<?> each : superGenericsTypeDifinition){
 							Template superClassTypeParameterDifinisionTemplate = baseType(each, superClassDifinition, TemplateType.itsetfTypeParameters);
-							classTypeParameters.put(superClassTypeParameterDifinisionTemplate.templateName(), superGenericsTypeTemplate.typeParameterAt(index++));
+							Template pairClassTypeParameterParameterizedTypeTemplate = superGenericsTypeTemplate.typeParameterAt(index++);
+							classTypeParameters.put(superClassTypeParameterDifinisionTemplate.templateName(), pairClassTypeParameterParameterizedTypeTemplate);
+							enclosing.addParameterizedType(now, superClassTypeParameterDifinisionTemplate, pairClassTypeParameterParameterizedTypeTemplate);
+							
 						}
 					}
 				}
@@ -139,8 +142,8 @@ class ReflectionInfoFactory {
 					
 					Type type = each.getGenericType();
 					Template typeTemplate = baseType(type, fieldTemplate, TemplateType.propertyTypeParameters);
-					if(typeTemplate instanceof ParameterTemplate){
-						ParameterTemplate parameterTemplate = (ParameterTemplate)typeTemplate;
+					if(typeTemplate instanceof TypeParameterTemplate){
+						TypeParameterTemplate parameterTemplate = (TypeParameterTemplate)typeTemplate;
 						if(parameterTemplate.isTypeVariableParameter()){
 							Template real = classTypeParameters.get(parameterTemplate.templateName());
 							if(real != null){
@@ -156,7 +159,7 @@ class ReflectionInfoFactory {
 					if(!fieldTemplate.isEmbedClass()){
 						Template fieldClassTemplate = classType(fieldTemplate.template());
 						fieldClassTemplate.enclosing(fieldTemplate);
-						fieldTemplate.child(fieldClassTemplate);
+						fieldTemplate.propertyTemplate(fieldClassTemplate);
 					}
 					templates.add(fieldTemplate);
 				}

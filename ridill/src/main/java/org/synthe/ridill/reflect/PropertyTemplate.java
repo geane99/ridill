@@ -64,4 +64,5 @@ abstract class PropertyTemplate extends Template{
 			}
 		});
 	}
+
 }

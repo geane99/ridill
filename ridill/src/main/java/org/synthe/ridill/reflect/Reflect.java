@@ -54,7 +54,7 @@ public class Reflect {
 	public Object reflect(Object instance, Method method, Integer depth, Object...args){
 		Class<?> target = method.getReturnType();
 		ReflectionInfo info = !_rcache.has(target) ?
-			ReflectionInfoFactory.returnType(instance, method, args):
+			TemplateFactory.returnType(instance, method, args):
 			_rcache.get(target);
 		return _reflect(info, _adapter, instance, depth);
 	}
@@ -83,7 +83,7 @@ public class Reflect {
 		@Override
 		public Object command(ReflectionInfo info, Adapter adapter, Object enclosingInstance, Integer depth) {
 			Object target = info.newInstance();
-			for(ReflectionInfo each : ReflectionInfoFactory.fieldTypeAll(info)){
+			for(ReflectionInfo each : TemplateFactory.fieldTypeAll(info)){
 				if(each.isImmutable())
 					continue;
 				Object val = _reflect(each,adapter,target, depth + 1);
