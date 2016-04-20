@@ -379,6 +379,18 @@ public abstract class Template{
 			_classType == ClassType.shortType ||
 			_classType == ClassType.stringType;
 	}
+	
+	/**
+	 * To convert the generic definition the argument as an real
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param real an entity
+	 */
+	public void real(Template real){
+		_template = real.template();
+		_typeParameters = real.typeParameters();
+	}
+	
 //	public boolean isList(){
 //		return _classType == ClassType.listType;
 //	}

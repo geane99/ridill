@@ -4,39 +4,89 @@ import java.lang.reflect.TypeVariable;
 
 import org.synthe.ridill.generator.TargetInfo;
 
-class ParameterTemplate extends Template{
+/**
+ * Class that provides type information.<br/>
+ * ParameterTemplate provides type parameter information.
+ * @author masahiko.ootsuki
+ * @since 2015/01/18
+ * @version 1.0.0
+ */
+class TypeParameterTemplate extends Template{
+	/**
+	 * generics definiton
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
 	private TypeVariable<?> _typeVariable;
-	
-	public ParameterTemplate(TemplateType templateType, TypeVariable<?> typeVariable, Template enclosing){
+	/**
+	 * constructor
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param templateType {@link TemplateType}
+	 * @param typeVariable generics definition
+	 * @param enclosing template enclosing the generics definition 
+	 */
+	public TypeParameterTemplate(TemplateType templateType, TypeVariable<?> typeVariable, Template enclosing){
 		_templateType = templateType;
 		enclosing(enclosing);
 		initByTypeVariable((TypeVariable<?>)typeVariable);
 	}
-	public ParameterTemplate(Class<?> type, Template enclosing){
+	/**
+	 * constructor
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param type {@link Class} of type parameter
+	 * @param enclosing template enclosing the type parameter
+	 */
+	public TypeParameterTemplate(Class<?> type, Template enclosing){
 		enclosing(enclosing);
 		initByClass((Class<?>)type);
 	}
-	public void real(Template real){
-		_template = real.template();
-		_typeParameters = real.typeParameters();
-	}
+	/**
+	 * has pair of generics definition and parameterized type
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when this template has pair of generics definition and parameterized type, retrun true.
+	 */
 	public Boolean hasReal(){
 		return _template != null;
 	}
-	
+	/**
+	 * this template is generics definition
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when this template is generics definition, return true
+	 */
 	public Boolean isTypeVariableParameter(){
 		return _typeVariable != null;
 	}
 	
+	/**
+	 * this template isnt generics definition
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when this template isnt generics definition, return true
+	 */
 	public Boolean isRealParameter(){
 		return !isTypeVariableParameter();
 	}
-	
+	/**
+	 * initialized with generics definition
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param typeVariable generics definition
+	 */
 	private void initByTypeVariable(TypeVariable<?> typeVariable){
 		_typeVariable = typeVariable;
 		_templateType = TemplateType.typeParameter;
+		_classType = ClassType.typeVariable;
 	}
-	
+	/**
+	 * initialized with type parameter
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param type type parameter
+	 */
 	private void initByClass(Class<?> type){
 		_template = type;
 		_classType = ClassType.get(type);
