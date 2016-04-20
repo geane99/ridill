@@ -159,7 +159,7 @@ class ReflectionInfoFactory {
 					if(!fieldTemplate.isEmbedClass()){
 						Template fieldClassTemplate = classType(fieldTemplate.template());
 						fieldClassTemplate.enclosing(fieldTemplate);
-						fieldTemplate.child(fieldClassTemplate);
+						fieldTemplate.propertyTemplate(fieldClassTemplate);
 					}
 					templates.add(fieldTemplate);
 				}

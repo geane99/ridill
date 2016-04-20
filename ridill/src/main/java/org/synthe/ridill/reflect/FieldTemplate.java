@@ -19,8 +19,12 @@ class FieldTemplate extends PropertyTemplate{
 	 * @version 1.0.0
 	 */
 	private Field _field;
-	
-	private Template _child;
+	/**
+	 * type of the field
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	private Template _propertyTemplate;
 	
 	/**
 	 * constructor
@@ -35,18 +39,25 @@ class FieldTemplate extends PropertyTemplate{
 		_classType = ClassType.get(template);
 		setAccessControl(_field);
 	}
-	public Template child(){
-		return _child;
+	/**
+	 * get {@link Template} of the field
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return {@link Template} of the field
+	 */
+	public Template propertyTemplate(){
+		return _propertyTemplate;
 	}
-	public void child(Template child){
-		_child = child;
-		_child._template = template();
-		_child._typeParameters = _typeParameters;
-	}
-	
-	public void real(Template template){
-		_template = template.template();
-		_typeParameters = template.typeParameters();
+	/**
+	 * set {@link Template} of the field
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param propertyTemplate {@link Template} of the field
+	 */
+	public void propertyTemplate(Template propertyTemplate){
+		_propertyTemplate = propertyTemplate;
+		_propertyTemplate._template = template();
+		_propertyTemplate._typeParameters = _typeParameters;
 	}
 	/*
 	 * (non-Javadoc)

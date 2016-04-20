@@ -42,6 +42,10 @@ class ParameterTemplate extends Template{
 		_classType = ClassType.get(type);
 		_templateType = TemplateType.typeParameter;
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.synthe.ridill.reflect.Template#template()
+	 */
 	@Override
 	public Class<?> template(){
 		if(hasReal())
@@ -50,6 +54,10 @@ class ParameterTemplate extends Template{
 			return _template;
 		return null;
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.synthe.ridill.reflect.Template#templateName()
+	 */
 	@Override
 	public String templateName(){
 		Class<?> target = template();
@@ -57,6 +65,10 @@ class ParameterTemplate extends Template{
 			return _template.getName();
 		return _typeVariable.getTypeName();
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.synthe.ridill.reflect.Template#isLocalClass()
+	 */
 	@Override
 	public Boolean isLocalClass(){
 		Class<?> target = template();
@@ -64,6 +76,10 @@ class ParameterTemplate extends Template{
 			return target.isLocalClass();
 		return false;
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.synthe.ridill.reflect.Template#isMemberClass()
+	 */
 	@Override
 	public Boolean isMemberClass(){
 		Class<?> target = template();
@@ -71,6 +87,10 @@ class ParameterTemplate extends Template{
 			return target.isMemberClass();
 		return false;
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.synthe.ridill.reflect.Template#isAnonymousClass()
+	 */
 	@Override
 	public Boolean isAnonymousClass(){
 		Class<?> target = template();
@@ -78,6 +98,10 @@ class ParameterTemplate extends Template{
 			return target.isAnonymousClass();
 		return false;
 	}
+	/*
+	 * (non-Javadoc)
+	 * @see org.synthe.ridill.reflect.Template#toTargetInfo(java.lang.Object)
+	 */
 	@Override
 	public TargetInfo toTargetInfo(Object instance) {
 		return null;
