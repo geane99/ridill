@@ -1,5 +1,6 @@
 package org.synthe.ridill.reflect;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.synthe.ridill.generator.TargetInfo;
@@ -59,6 +60,18 @@ public class ClassTemplate extends Template{
 		_properties = properties;
 	}
 	/**
+	 * add property the belongs to this template
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param property property
+	 */
+	public void addProperty(Template property){
+		if(_properties == null)
+			_properties = new ArrayList<>();
+		_properties.add(property);
+	}
+	
+	/**
 	 * get methods that belongs to this temlpate
 	 * @since 2015/01/18
 	 * @version 1.0.0
@@ -75,5 +88,30 @@ public class ClassTemplate extends Template{
 	 */
 	public void methods(List<Template> methods){
 		_methods = methods;
+	}
+	/**
+	 * add method that belongs this template
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param method method
+	 */
+	public void addMethod(Template method){
+		if(_methods == null)
+			_methods = new ArrayList<>();
+		_methods.add(method);
+	}
+	/**
+	 * To override itself by the argument
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param template template
+	 */
+	public void override(ClassTemplate template){
+		_template = template.template();
+		_templateType = template.templateType();
+		_classType = template.classType();
+		_typeParameters = template.typeParameters();
+		_enclosing = template.enclosing();
+		_parameterizedTypes = template._parameterizedTypes;
 	}
 }

@@ -6,75 +6,68 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import org.junit.Test;
 import org.synthe.ridill.generator.TargetInfo;
-public class MethodTemplateTest {
-	
+public class FieldTemplateTest {
 	class LocalClass{
-		String field = "test";
-		public LocalClass local;
-		
-		public LocalClass testMethod1(){
-			return new LocalClass();
-		}
-		public String testMethod2(){
-			return field;
-		}
+		public String field1 = "test1";
+		@SuppressWarnings("unused")
+		private String field2 = "test2";
 	}
 	
 	@Test
 	public void type() throws Exception {
-		assertThat(MethodTemplate.class, notNullValue());
+		assertThat(FieldTemplate.class, notNullValue());
 	}
 
 	@Test
 	public void instantiation() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
-		assertThat(target, notNullValue());
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
+		assertThat(f1, notNullValue());
 	}
 
 	@Test
 	public void propertyName_A$() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
-		String actual = target.propertyName();
-		String expected = method.getName();
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
+		String actual = f1.propertyName();
+		String expected = "field1";
 		assertThat(actual, is(equalTo(expected)));
 	}
 
 	@Test
 	public void set_A$Object$Object() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
 		Object instance = new LocalClass();
-		String value = "test";
-		target.set(instance, value);
+		Object value = "test1-invoke";
+		f1.set(instance, value);
 	}
 
 	@Test
 	public void set_A$Object$Object_T$IllegalAccessException() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
 		Object instance = new LocalClass();
-		String value = "test";
+		Object value = "test1-invoke";
 		try {
-			target.set(instance, value);
+			f1.set(instance, value);
 		} catch (IllegalAccessException e) {
 			fail("Expected exception was not thrown!");
 		}
@@ -82,27 +75,27 @@ public class MethodTemplateTest {
 
 	@Test
 	public void get_A$Object() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
 		Object instance = new LocalClass();
-		Object actual = target.get(instance);
-		Object expected = null;
+		Object actual = f1.get(instance);
+		Object expected = "test1";
 		assertThat(actual, is(equalTo(expected)));
 	}
 
 	@Test
 	public void get_A$Object_T$IllegalAccessException() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
 		Object instance = new LocalClass();
 		try {
-			target.get(instance);
+			f1.get(instance);
 		} catch (IllegalAccessException e) {
 			fail("Expected exception was not thrown!");
 		}
@@ -110,29 +103,29 @@ public class MethodTemplateTest {
 
 	@Test
 	public void invoke_A$Object$ObjectArray() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod2");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
-		LocalClass instance = new LocalClass();
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
+		Object instance = new LocalClass();
 		Object[] args = new Object[] {};
-		Object actual = target.invoke(instance, args);
-		Object expected = instance.field;
+		Object actual = f1.invoke(instance, args);
+		Object expected = null;
 		assertThat(actual, is(equalTo(expected)));
 	}
 
 	@Test
 	public void invoke_A$Object$ObjectArray_T$InvocationTargetException() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
 		Object instance = new LocalClass();
 		Object[] args = new Object[] {};
 		try {
-			target.invoke(instance, args);
+			f1.invoke(instance, args);
 		} catch (InvocationTargetException e) {
 			fail("Expected exception was not thrown!");
 		}
@@ -140,15 +133,15 @@ public class MethodTemplateTest {
 
 	@Test
 	public void invoke_A$Object$ObjectArray_T$IllegalAccessException() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
-		target.enclosing(enclosing);
+		Field field1 = LocalClass.class.getField("field1");
+		ClassTemplate ftarget = new ClassTemplate(String.class);
+		FieldTemplate f1 = new FieldTemplate(field1, ftarget);
+		f1.enclosing(enclosing);
 		Object instance = new LocalClass();
 		Object[] args = new Object[] {};
 		try {
-			target.invoke(instance, args);
+			f1.invoke(instance, args);
 		} catch (IllegalAccessException e) {
 			fail("Expected exception was not thrown!");
 		}
@@ -156,9 +149,9 @@ public class MethodTemplateTest {
 
 	@Test
 	public void toTargetInfo_A$Object() throws Exception {
-		Method method = LocalClass.class.getMethod("testMethod1");
-		ClassTemplate local = new ClassTemplate(LocalClass.class);
-		MethodTemplate target = new MethodTemplate(method,local);
+		Field field = LocalClass.class.getField("field1");
+		ClassTemplate local = new ClassTemplate(String.class);
+		FieldTemplate target = new FieldTemplate(field,local);
 		Template enclosing = new ClassTemplate(LocalClass.class);
 		target.enclosing(enclosing);
 		Object instance = new LocalClass();

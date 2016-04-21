@@ -24,40 +24,18 @@ class FieldTemplate extends PropertyTemplate{
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 */
-	private Template _propertyTemplate;
-	
 	/**
 	 * constructor
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @param field {@link Field}
 	 */
-	public FieldTemplate(Field field, Class<?> template){
+	public FieldTemplate(Field field, ClassTemplate template){
+		super(template.template());
+		override(template);
 		_field = field;
-		_template = template;
-		_templateType = TemplateType.property;
-		_classType = ClassType.get(template);
 		setAccessControl(_field);
-	}
-	/**
-	 * get {@link Template} of the field
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 * @return {@link Template} of the field
-	 */
-	public Template propertyTemplate(){
-		return _propertyTemplate;
-	}
-	/**
-	 * set {@link Template} of the field
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 * @param propertyTemplate {@link Template} of the field
-	 */
-	public void propertyTemplate(Template propertyTemplate){
-		_propertyTemplate = propertyTemplate;
-		_propertyTemplate._template = template();
-		_propertyTemplate._typeParameters = _typeParameters;
+		_templateType = TemplateType.property;
 	}
 	/*
 	 * (non-Javadoc)

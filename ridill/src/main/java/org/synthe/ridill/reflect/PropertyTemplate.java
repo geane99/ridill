@@ -12,7 +12,16 @@ import java.security.PrivilegedAction;
  * @since 2015/01/18
  * @version 1.0.0
  */
-abstract class PropertyTemplate extends Template{
+abstract class PropertyTemplate extends ClassTemplate{
+	/**
+	 * constructor
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param target
+	 */
+	public PropertyTemplate(Class<?> target) {
+		super(target);
+	}
 	/**
 	 * Get property name. (field name or method name)
 	 * @since 2015/01/18

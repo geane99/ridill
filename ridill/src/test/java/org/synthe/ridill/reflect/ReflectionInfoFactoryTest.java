@@ -41,7 +41,7 @@ public class ReflectionInfoFactoryTest {
 		ExtGenericInnerClassTest extGenericInnerClassTest = new ExtGenericInnerClassTest();
 		printClassInfo(extGenericInnerClassTest.getClass());
 		
-		Template t = TemplateFactory.classType(ExtGenericInnerClassTest.class);
+		Template t = TemplateFactory.createByClassType(ExtGenericInnerClassTest.class);
 		System.out.println("end");
 	}
 	

@@ -25,9 +25,11 @@ class MethodTemplate extends PropertyTemplate{
 	 * @version 1.0.0
 	 * @param field {@link Method}
 	 */
-	public MethodTemplate(Method method){
+	public MethodTemplate(Method method, ClassTemplate returnTemplate){
+		super(returnTemplate.template());
 		_method = method;
 		setAccessControl(_method);
+		override(returnTemplate);
 	}
 	/*
 	 * (non-Javadoc)

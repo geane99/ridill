@@ -35,7 +35,7 @@ class TemplateFactory {
 	
 	
 	
-	public static Template createByClassType(Class<?> clazz){
+	public static ClassTemplate createByClassType(Class<?> clazz){
 		ClassTemplate template = new ClassTemplate(clazz);
 		if(template.isLocalClass()){
 			Class<?> enclosingClass = clazz.getEnclosingClass();
@@ -165,7 +165,8 @@ class TemplateFactory {
 					if(each.isSynthetic())
 						continue;
 					Class<?> fieldClass = each.getType();
-					FieldTemplate fieldTemplate = new FieldTemplate(each, fieldClass);
+					ClassTemplate fieldClassType = createByClassType(fieldClass);
+					FieldTemplate fieldTemplate = new FieldTemplate(each, fieldClassType);
 					fieldTemplate.enclosing(enclosing);
 					
 					TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
@@ -192,11 +193,6 @@ class TemplateFactory {
 						fieldTemplate.real(typeTemplate);
 					}
 					
-					if(!fieldTemplate.isEmbedClass()){
-						Template fieldClassTemplate = createByClassType(fieldTemplate.template());
-						fieldClassTemplate.enclosing(fieldTemplate);
-						fieldTemplate.propertyTemplate(fieldClassTemplate);
-					}
 					templates.add(fieldTemplate);
 				}
 			}
