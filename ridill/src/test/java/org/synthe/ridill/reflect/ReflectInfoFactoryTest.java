@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class ReflectionInfoFactoryTest {
+public class ReflectInfoFactoryTest {
 	@Test
 	public void clsssTypeTest() throws Exception{
 //		class SimpleInMethodClassTest{

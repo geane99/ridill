@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.util.List;
 import org.synthe.ridill.reflect.ClassType;
-import org.synthe.ridill.reflect.ReflectionInfo;
+import org.synthe.ridill.reflect.ReflectInfo;
 public class InternalGeneratorTest {
 
 	@Test

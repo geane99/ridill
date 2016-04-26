@@ -12,28 +12,20 @@ import java.util.List;
 import java.util.Map;
 
 class TemplateFactory {
-	public static ReflectionInfo returnType(Object proxy, Method method, Object[] params){
+	@SuppressWarnings("unused")
+	public static MethodTemplate createByReturnType(Method method, Object instance, Object...args){
 		Class<?> returnType = method.getReturnType();
+		Class<?> enclosing = method.getDeclaringClass();
 		
-		return null;
-	}
-	
-	public static ReflectionInfo fieldType(ReflectionInfo info, Field field){
-		return null;
-	}
-	
-	
-	public static List<ReflectionInfo> fieldTypeAll(ReflectionInfo owner){
-		List<ReflectionInfo> r = new ArrayList<>();
+		//TODO impl
+		Map<String,Template> classTypeParameters = getClassTypeParameters(enclosing, enclosing.getSuperclass());
 		
-		return null;
+		ClassTemplate returnTypeTemplate = createByClassType(returnType);
+		
+		
+		MethodTemplate template = new MethodTemplate(method, returnTypeTemplate);
+		return template;
 	}
-	
-	public static ReflectionInfo fieldTypeParameterType(ReflectionInfo info, Integer genericsIndex){
-		return null;
-	}
-	
-	
 	
 	public static ClassTemplate createByClassType(Class<?> clazz){
 		ClassTemplate template = new ClassTemplate(clazz);
@@ -133,25 +125,7 @@ class TemplateFactory {
 		while(now != null && !now.equals(Object.class)){
 			Map<String,Template> classTypeParameters = getClassTypeParameters(now, before);
 			enclosing.addRealParameterizedTypes(enclosingClass, classTypeParameters);
-//			if(before != null){
-//				Type superGenericsTypeParameter = before.getGenericSuperclass();
-//				if(superGenericsTypeParameter != null){
-//					Template superGenericsTypeTemplate = createByBaseType(superGenericsTypeParameter, null, TemplateType.itsetfTypeParameters);
-//					TypeVariable<?>[] superGenericsTypeDifinition = now.getTypeParameters();
-//					if(superGenericsTypeDifinition != null){
-//						Template superClassDifinition = createByClassType(now);
-//						int index = 0;
-//						for(TypeVariable<?> each : superGenericsTypeDifinition){
-//							Template superClassTypeParameterDifinisionTemplate = createByBaseType(each, superClassDifinition, TemplateType.itsetfTypeParameters);
-//							Template pairClassTypeParameterParameterizedTypeTemplate = superGenericsTypeTemplate.typeParameterAt(index++);
-//							classTypeParameters.put(superClassTypeParameterDifinisionTemplate.templateName(), pairClassTypeParameterParameterizedTypeTemplate);
-//							enclosing.addParameterizedType(now, superClassTypeParameterDifinisionTemplate, pairClassTypeParameterParameterizedTypeTemplate);
-//							
-//						}
-//					}
-//				}
-//			}
-			
+
 			List<Field> fields = new ArrayList<>();
 			List<Field> privateFields = Arrays.asList(now.getDeclaredFields());
 			if(privateFields != null)

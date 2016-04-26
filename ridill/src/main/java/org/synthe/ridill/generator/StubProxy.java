@@ -67,7 +67,7 @@ class StubProxy implements InvocationHandler{
 		InternalGenerator generator = _extGenerator != null ? 
 			new InternalGenerator(_extGenerator):
 			new InternalGenerator(_generator);
-		Reflect obj = new Reflect(_loader, new GeneratorAdapter(generator));
+		Reflect obj = new Reflect(_loader, generator);
 		return obj.reflect(proxy, method, args);
 	}
 }
