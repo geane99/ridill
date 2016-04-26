@@ -106,7 +106,7 @@ class ClassTemplate extends Template{
 	 * @version 1.0.0
 	 * @param template template
 	 */
-	public void override(ClassTemplate template){
+	protected void override(ClassTemplate template){
 		_template = template.template();
 		_templateType = template.templateType();
 		_classType = template.classType();

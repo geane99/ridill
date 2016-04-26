@@ -1,5 +1,6 @@
 package org.synthe.ridill.reflect;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +73,9 @@ public class ClassInfo {
 	 * @return new instance
 	 * @throws IllegalAccessException when cant access constructor, thrown {@link IllegalAccessException}
 	 * @throws InstantiationException see {@link InstantiationException}
+	 * @throws InvocationTargetException when cant access constructor, thrown {@link InvocationTargetException}
 	 */
-	public Object newInstance() throws IllegalAccessException, InstantiationException{
+	public Object newInstance() throws IllegalAccessException, InstantiationException, InvocationTargetException{
 		return _template.newInstance();
 	}
 	/**

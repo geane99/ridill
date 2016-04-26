@@ -115,10 +115,4 @@ public class ClassTemplateTest {
 		MethodTemplate mt = new MethodTemplate(m, mtarget);
 		target.addMethod(mt);
 	}
-	
-	@Test
-	public void override_A$() throws Exception{
-		
-	}
-
 }

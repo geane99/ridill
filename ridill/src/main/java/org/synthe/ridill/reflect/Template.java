@@ -1,5 +1,10 @@
 package org.synthe.ridill.reflect;
 
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -176,11 +181,86 @@ abstract class Template{
 	 * @return new instance
 	 * @throws IllegalAccessException when cant access constructor, thrown {@link IllegalAccessException}
 	 * @throws InstantiationException see {@link InstantiationException}
+	 * @throws InvocationTargetException when cant access constructor, thrown {@link InvocationTargetException}
 	 */
-	public Object newInstance() throws IllegalAccessException, InstantiationException{
-		//TODO impl
-		return _template.newInstance();
+	public Object newInstance() throws IllegalAccessException, InstantiationException, InvocationTargetException{
+		return _newInstance(this, enclosing());
 	}
+	
+	/**
+	 * return new instance
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return new instance
+	 * @throws IllegalAccessException when cant access constructor, thrown {@link IllegalAccessException}
+	 * @throws InstantiationException see {@link InstantiationException}
+	 * @throws InvocationTargetException when cant access constructor, thrown {@link InvocationTargetException}
+	 */
+	private Object _newInstance(Template target, Template enclosing) throws IllegalAccessException, InstantiationException, InvocationTargetException{
+		Constructor<?> constructor = null;
+		boolean isEnclosing = false;
+		
+		if(isLocalClass()){
+			constructor = target.template().getEnclosingConstructor();
+			isEnclosing = true;
+		}
+		else if(isAnonymousClass()){
+			constructor = target.template().getEnclosingConstructor();
+			isEnclosing = true;
+		}
+		else if(isMemberClass()){
+			try{
+				Class<?> enclosingClass = target.template().getDeclaringClass();
+				constructor = target.template().getDeclaredConstructor(enclosingClass);
+				isEnclosing = true;
+			}
+			catch(NoSuchMethodException nme){
+				throw new InvocationTargetException(nme);
+			}
+		}
+		
+		constructor = constructor == null ? getNoArgConsructor(target) : constructor;
+		//TODO impl?
+		if(constructor == null)
+			throw new InstantiationException();
+		
+		Object[] params = null;
+		if(isEnclosing)
+			params = new Object[]{ enclosing.newInstance() };
+		
+		return constructor.newInstance(params);
+		
+	}
+	
+	private Constructor<?> getNoArgConsructor(Template target){
+		Constructor<?>[] constructors = target.template().getDeclaredConstructors();
+		if(constructors == null)
+			return null;
+		for(Constructor<?> each : constructors)
+			if(each.getParameterCount() == 0)
+				return each;
+		return null;
+	}
+	
+	/**
+	 * when class instance means singleton, return true.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when class instance mean singleton, return true.
+	 */
+	public Boolean isSingleton(){
+		Constructor<?>[] constructors = _template.getDeclaredConstructors();
+		if(constructors == null)
+			return true;
+		for(Constructor<?> each : constructors){
+			if(!each.isAccessible())
+				return false;
+			if(each.isSynthetic())
+				continue;
+		}
+		return true;
+	}
+	
 	/**
 	 * return name of target class
 	 * @since 2015/01/18
@@ -407,7 +487,20 @@ abstract class Template{
 		_classType = real.classType();
 		_typeParameters = real.typeParameters();
 	}
-	
+	/**
+	 * set access to true
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param target {@link AccessibleObject}
+	 */
+	protected void setAccessControl(AccessibleObject target){
+		PrivilegedAction<Object> action = () -> {
+			target.setAccessible(true);
+			return target;
+		};
+		AccessController.doPrivileged(action);
+	}
+
 	/**
 	 * Convert this to {@link ClassInfo}
 	 * @since 2015/01/18

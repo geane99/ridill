@@ -1,5 +1,6 @@
 package org.synthe.ridill.generator;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -118,6 +119,9 @@ class InternalGenerator implements ReflectAdapter{
 				return null;
 			}
 			catch(InstantiationException e){
+				return null;
+			}
+			catch(InvocationTargetException e){
 				return null;
 			}
 		}

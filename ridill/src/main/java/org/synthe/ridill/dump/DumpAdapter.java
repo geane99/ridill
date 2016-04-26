@@ -29,43 +29,37 @@ public class DumpAdapter implements ReflectAdapter{
 	}
 
 	@Override
-	public <T extends Map<?, ?>> T getMap(ClassInfo info,
-			Object enclosingInstance, Integer depth) {
+	public <T extends Map<?, ?>> T getMap(ClassInfo info, Object enclosingInstance, Integer depth) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public <T extends List<?>> T getList(ClassInfo info,
-			Object enclosingInstance, Integer depth) {
+	public <T extends List<?>> T getList(ClassInfo info, Object enclosingInstance, Integer depth) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public <T extends Set<?>> T getSet(ClassInfo info,
-			Object enclosingInstance, Integer depth) {
+	public <T extends Set<?>> T getSet(ClassInfo info, Object enclosingInstance, Integer depth) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public <T extends Collection<?>> T getCollection(ClassInfo info,
-			Object enclosingInstance, Integer depth) {
+	public <T extends Collection<?>> T getCollection(ClassInfo info, Object enclosingInstance, Integer depth) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public <T extends Queue<?>> T getQueue(ClassInfo info,
-			Object enclosingInstance, Integer depth) {
+	public <T extends Queue<?>> T getQueue(ClassInfo info, Object enclosingInstance, Integer depth) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Integer getCollectionSize(ClassInfo info,
-			Object enclosingInstance, Integer depth) {
+	public Integer getCollectionSize(ClassInfo info, Object enclosingInstance, Integer depth) {
 		// TODO Auto-generated method stub
 		return null;
 	}

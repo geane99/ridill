@@ -1,6 +1,7 @@
 package org.synthe.ridill.reflect;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
@@ -126,6 +127,9 @@ public class ReflectService {
 			catch(InstantiationException e){
 				return null;
 			}
+			catch(InvocationTargetException e){
+				return null;
+			}
 		}
 	}
 	
@@ -143,6 +147,9 @@ public class ReflectService {
 				return null;
 			}
 			catch(InstantiationException e){
+				return null;
+			}
+			catch(InvocationTargetException e){
 				return null;
 			}
 		}
@@ -183,6 +190,9 @@ public class ReflectService {
 				return null;
 			}
 			catch(InstantiationException e){
+				return null;
+			}
+			catch(InvocationTargetException e){
 				return null;
 			}
 		}

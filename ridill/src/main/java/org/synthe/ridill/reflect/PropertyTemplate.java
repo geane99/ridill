@@ -58,18 +58,5 @@ abstract class PropertyTemplate extends ClassTemplate{
 	 * @throws IllegalAccessException when cant access property, thrown {@link IllegalAccessException}
 	 */
 	abstract public Object invoke(Object instance, Object...args) throws InvocationTargetException, IllegalAccessException;
-	/**
-	 * set access to true
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 * @param target {@link AccessibleObject}
-	 */
-	protected void setAccessControl(AccessibleObject target){
-		PrivilegedAction<Object> action = () -> {
-			target.setAccessible(true);
-			return target;
-		};
-		AccessController.doPrivileged(action);
-	}
 
 }
