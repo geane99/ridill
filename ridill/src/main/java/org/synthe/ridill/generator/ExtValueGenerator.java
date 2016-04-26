@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.synthe.ridill.reflect.ReflectInfo;
+import org.synthe.ridill.reflect.ClassInfo;
 
 /**
  * ExtValueGenerator that generates the value of the stub.<br/>
@@ -35,7 +35,7 @@ public interface ExtValueGenerator{
 	 * @param enclosingInstance instance of property enclosing instance
 	 * @return generated value
 	 */
-	public Object get(ReflectInfo info, Object enclosingInstance);
+	public Object get(ClassInfo info, Object enclosingInstance);
 	/**
 	 * generate collection#size
 	 * @since 2015/01/18
@@ -43,7 +43,7 @@ public interface ExtValueGenerator{
 	 * @param info information of the generated value.
 	 * @return generated value
 	 */
-	public Integer size(ReflectInfo info);
+	public Integer size(ClassInfo info);
 	/**
 	 * generate collection instance.
 	 * @since 2015/01/18
@@ -51,7 +51,7 @@ public interface ExtValueGenerator{
 	 * @param info information of the generated value.
 	 * @return generated value
 	 */
-	public <T extends Collection<?>> T collection(ReflectInfo info);
+	public <T extends Collection<?>> T collection(ClassInfo info);
 	/**
 	 * generate list instance.
 	 * @since 2015/01/18
@@ -59,7 +59,7 @@ public interface ExtValueGenerator{
 	 * @param info information of the generated value.
 	 * @return generated value
 	 */
-	public <T extends List<?>> T list(ReflectInfo info);
+	public <T extends List<?>> T list(ClassInfo info);
 	/**
 	 * generate set instance.
 	 * @since 2015/01/18
@@ -67,7 +67,7 @@ public interface ExtValueGenerator{
 	 * @param info information of the generated value.
 	 * @return generated value
 	 */
-	public <T extends Set<?>> T set(ReflectInfo info);
+	public <T extends Set<?>> T set(ClassInfo info);
 	/**
 	 * generate queue instance.
 	 * @since 2015/01/18
@@ -75,12 +75,12 @@ public interface ExtValueGenerator{
 	 * @param info information of the generated value.
 	 * @return generated value
 	 */
-	public <T extends Queue<?>> T queue(ReflectInfo info);
+	public <T extends Queue<?>> T queue(ClassInfo info);
 	/**
 	 * @since 2015/01/18
  	 * @version 1.0.0
 	 * @param info information of the generated value.
 	 * @return generated value
 	 */
-	public <T extends Map<?,?>> T dictionary(ReflectInfo info);
+	public <T extends Map<?,?>> T dictionary(ClassInfo info);
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.synthe.ridill.reflect.ReflectAdapter;
 import org.synthe.ridill.reflect.ClassType;
-import org.synthe.ridill.reflect.ReflectInfo;
+import org.synthe.ridill.reflect.ClassInfo;
 
 /**
  * Class that the connection to {@link ValueGenerator} or {@link ExtValueGenerator} in generating value.
@@ -70,7 +70,7 @@ class InternalGenerator implements ReflectAdapter{
 	}
 
 	@Override
-	public Object getEmbedValue(ReflectInfo info, Object enclosingInstance, Integer depth){
+	public Object getEmbedValue(ClassInfo info, Object enclosingInstance, Integer depth){
 		if(isSimple()){
 			TargetInfo gi = info.toTargetInfo(enclosingInstance);
 			
@@ -99,7 +99,7 @@ class InternalGenerator implements ReflectAdapter{
 	}
 	
 	@Override
-	public Object getObjectValue(ReflectInfo info, Object enclosingInstance, Integer depth){
+	public Object getObjectValue(ClassInfo info, Object enclosingInstance, Integer depth){
 		if(isSimple())
 			return new Object();
 		return _extValueGenerator.get(info, enclosingInstance);
@@ -107,7 +107,7 @@ class InternalGenerator implements ReflectAdapter{
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Object getEnumValue(ReflectInfo info, Object enclosingInstance, Integer depth){
+	public Object getEnumValue(ClassInfo info, Object enclosingInstance, Integer depth){
 		if(isSimple()){
 			try{
 				TargetInfo gi = info.toTargetInfo(enclosingInstance);
@@ -126,7 +126,7 @@ class InternalGenerator implements ReflectAdapter{
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Map<?, ?>> T getMap(ReflectInfo info, Object enclosingInstance, Integer depth) {
+	public <T extends Map<?, ?>> T getMap(ClassInfo info, Object enclosingInstance, Integer depth) {
 		if(isSimple())
 			return (T)new HashMap<>();
 		return _extValueGenerator.dictionary(info);
@@ -134,7 +134,7 @@ class InternalGenerator implements ReflectAdapter{
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends List<?>> T getList(ReflectInfo info, Object enclosingInstance, Integer depth) {
+	public <T extends List<?>> T getList(ClassInfo info, Object enclosingInstance, Integer depth) {
 		if(isSimple())
 			return (T)new ArrayList<>();
 		return _extValueGenerator.list(info);
@@ -142,7 +142,7 @@ class InternalGenerator implements ReflectAdapter{
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Set<?>> T getSet(ReflectInfo info, Object enclosingInstance, Integer depth) {
+	public <T extends Set<?>> T getSet(ClassInfo info, Object enclosingInstance, Integer depth) {
 		if(isSimple())
 			return (T)new HashSet<>();
 		return _extValueGenerator.set(info);
@@ -150,7 +150,7 @@ class InternalGenerator implements ReflectAdapter{
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Collection<?>> T getCollection(ReflectInfo info, Object enclosingInstance, Integer depth) {
+	public <T extends Collection<?>> T getCollection(ClassInfo info, Object enclosingInstance, Integer depth) {
 		if(isSimple())
 			return (T)new ArrayList<>();
 		return _extValueGenerator.collection(info);
@@ -158,13 +158,13 @@ class InternalGenerator implements ReflectAdapter{
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Queue<?>> T getQueue(ReflectInfo info, Object enclosingInstance, Integer depth) {
+	public <T extends Queue<?>> T getQueue(ClassInfo info, Object enclosingInstance, Integer depth) {
 		if(isSimple())
 			return (T)new LinkedList<>();
 		return _extValueGenerator.queue(info);
 	}
 	@Override
-	public Integer getCollectionSize(ReflectInfo info, Object enclosingInstance, Integer depth) {
+	public Integer getCollectionSize(ClassInfo info, Object enclosingInstance, Integer depth) {
 		if(isSimple())
 			return _generator.getCollectionSize(info.toTargetInfo(enclosingInstance));
 		return _extValueGenerator.size(info);

@@ -9,7 +9,7 @@ import org.synthe.ridill.generator.TargetInfo;
 
 
 /**
- * Class that provides type information.<br/>
+ * {@link Class} that provides type information.<br/>
  * Template provides {@link Class} information.
  * @author masahiko.ootsuki
  * @since 2015/01/18
@@ -104,8 +104,12 @@ abstract class Template{
 	public Template findEnclosingParameterizedTypeByTypeVariable(Template typeVariable){
 		Class<?> target = _template;
 		while(target != null){
-			Map<String,Template> targetTemplateParameterizedTypes = _parameterizedTypes.get(target.getName());
-			if(targetTemplateParameterizedTypes != null && targetTemplateParameterizedTypes.containsKey(typeVariable.templateName()))
+			Map<String,Template> targetTemplateParameterizedTypes = 
+				_parameterizedTypes.get(target.getName());
+			
+			if(targetTemplateParameterizedTypes != null && 
+			   targetTemplateParameterizedTypes.containsKey(typeVariable.templateName())
+			)
 				return targetTemplateParameterizedTypes.get(typeVariable.templateName());
 			target = target.getSuperclass();
 		}
@@ -170,6 +174,8 @@ abstract class Template{
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @return new instance
+	 * @throws IllegalAccessException when cant access constructor, thrown {@link IllegalAccessException}
+	 * @throws InstantiationException see {@link InstantiationException}
 	 */
 	public Object newInstance() throws IllegalAccessException, InstantiationException{
 		//TODO impl
@@ -206,7 +212,7 @@ abstract class Template{
 	 * get type parameter at index.
 	 * @since 2015/01/18
 	 * @version 1.0.0
-	 * @param index array index
+	 * @param index index of array
 	 * @return {@link Template}
 	 */
 	public Template typeParameterAt(Integer index){
@@ -248,10 +254,6 @@ abstract class Template{
 	 */
 	public Boolean isImmutable(){
 		return false;
-//		return 
-//			_ownerType == TemplateType.property && 
-//			_owner instanceof Member && 
-//			Modifier.isFinal(((Member)_owner).getModifiers());
 	}
 	/**
 	 * return target is field
@@ -394,7 +396,7 @@ abstract class Template{
 	}
 	
 	/**
-	 * To convert the generic definition the argument as an real
+	 * Convert the generic definition the argument as an real
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @param real an entity
@@ -406,19 +408,31 @@ abstract class Template{
 		_typeParameters = real.typeParameters();
 	}
 	
-//	public boolean isList(){
-//		return _classType == ClassType.listType;
-//	}
-//	public boolean isMap(){
-//		return _classType == ClassType.mapType;
-//	}
-//	public boolean isQueue(){
-//		return _classType == ClassType.queueType;
-//	}
-//	public boolean isSet(){
-//		return _classType == ClassType.setType;
-//	}
-//	public boolean isCollection(){
-//		return _classType == ClassType.collectionType;
-//	}
+	/**
+	 * Convert this to {@link ClassInfo}
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return {@link ClassInfo}
+	 */
+	public ClassInfo toClassInfo(){
+		return new ClassInfoImpl(this);
+	}
+	
+	/**
+	 * implementation of {@link ClassInfo}
+	 * @author masahiko.ootsuki
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	private class ClassInfoImpl extends ClassInfo{
+		/**
+		 * constructor
+		 * @since 2015/01/18
+		 * @version 1.0.0
+		 * @param template this
+		 */
+		public ClassInfoImpl(Template template){
+			this._template = template;
+		}
+	}
 }

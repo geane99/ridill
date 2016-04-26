@@ -23,7 +23,7 @@ class MethodTemplate extends PropertyTemplate{
 	 * constructor
 	 * @since 2015/01/18
 	 * @version 1.0.0
-	 * @param field {@link Method}
+	 * @param method {@link Method}
 	 * @param returnTemplate {@link ClassTemplate}
 	 */
 	public MethodTemplate(Method method, ClassTemplate returnTemplate){
@@ -33,6 +33,13 @@ class MethodTemplate extends PropertyTemplate{
 		override(returnTemplate);
 	}
 	
+	/**
+	 * constructor 
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param method {@link Method}
+	 * @param returnTemplate {@link TypeParameterTemplate}
+	 */
 	public MethodTemplate(Method method, TypeParameterTemplate returnTemplate){
 		super(returnTemplate.template());
 		_method = method;

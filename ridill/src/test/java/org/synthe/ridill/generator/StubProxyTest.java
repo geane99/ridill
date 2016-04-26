@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import org.synthe.ridill.reflect.Reflect;
+import org.synthe.ridill.reflect.ReflectService;
 public class StubProxyTest {
 
 	@Test

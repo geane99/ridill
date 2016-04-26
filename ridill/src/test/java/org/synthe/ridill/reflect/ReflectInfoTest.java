@@ -1,6 +1,6 @@
 package org.synthe.ridill.reflect;
 
-import org.synthe.ridill.reflect.ReflectInfo.*;
+import org.synthe.ridill.reflect.ClassInfo.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -10,7 +10,7 @@ public class ReflectInfoTest {
 
 	@Test
 	public void type() throws Exception {
-		assertThat(ReflectInfo.class, notNullValue());
+		assertThat(ClassInfo.class, notNullValue());
 	}
 
 	@Test

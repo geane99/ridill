@@ -1,6 +1,6 @@
 package org.synthe.ridill.reflect;
 
-import org.synthe.ridill.reflect.Reflect.*;
+import org.synthe.ridill.reflect.ReflectService.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -14,7 +14,7 @@ public class ReflectTest {
 
 	@Test
 	public void type() throws Exception {
-		assertThat(Reflect.class, notNullValue());
+		assertThat(ReflectService.class, notNullValue());
 	}
 
 	@Test

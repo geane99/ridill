@@ -10,15 +10,16 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-public class Reflect {
+public class ReflectService {
 	
 	private Map<ClassType, InternalAdapterStrategy> _factoryCache;
 	private _Cache _rcache;
 	private ClassLoader _loader;
 	private ReflectAdapter _adapter;
+	private TemplateFactory _templateFactory = new TemplateFactory();
 	
 	
-	public Reflect(ClassLoader loader, ReflectAdapter adapter){
+	public ReflectService(ClassLoader loader, ReflectAdapter adapter){
 		_loader = loader;
 		_adapter = adapter;
 		_initialize();
@@ -57,8 +58,8 @@ public class Reflect {
 	
 	public Object reflect(Object instance, Method method, Integer depth, Object...args){
 		Class<?> target = method.getReturnType();
-		ReflectInfo info = !_rcache.has(target) ?
-			new ReflectInfo(TemplateFactory.createByReturnType(method, instance, args)):
+		ClassInfo info = !_rcache.has(target) ?
+			_templateFactory.createByReturnType(method, instance, args).toClassInfo():
 			_rcache.get(target);
 		return _reflect(info, _adapter, instance, depth);
 	}
@@ -67,11 +68,11 @@ public class Reflect {
 	/* --------------------------------------------------------- */
 	/* private method                                            */
 	/* --------------------------------------------------------- */
-	private Object _reflect(ReflectInfo info, ReflectAdapter adapter, Object instance, Integer depth){
+	private Object _reflect(ClassInfo info, ReflectAdapter adapter, Object instance, Integer depth){
 		return _selectFactory(info).command(info, adapter, instance, depth);
 	}
 
-	private InternalAdapterStrategy _selectFactory(ReflectInfo info){
+	private InternalAdapterStrategy _selectFactory(ClassInfo info){
 		return _factoryCache.get(info.classType());
 	}
 	
@@ -91,22 +92,22 @@ public class Reflect {
 	interface InternalAdapterStrategy {
 		/**
 		 * Generate a value from the argument
-		 * @param info {@link ReflectInfo}
+		 * @param info {@link ClassInfo}
 		 * @param adapter {@link ReflectAdapter}
 		 * @param instance instance of enclosing class
 		 * @param depth depth of recursive processing
 		 * @return generated value
 		 */
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object instance, Integer depth);
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object instance, Integer depth);
 	}
 	
 	
 	class _DomainStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			try{
 				Object target = info.newInstance();
-				for(ReflectInfo each : info.properties()){
+				for(ClassInfo each : info.properties()){
 					if(each.isImmutable())
 						continue;
 					Object val = _reflect(each,adapter,target, depth + 1);
@@ -130,7 +131,7 @@ public class Reflect {
 	
 	class _ArrayStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			try{
 				Object[] arrays = (Object[])info.newInstance();
 				for(int i = 0; i < arrays.length; i++)
@@ -149,7 +150,7 @@ public class Reflect {
 	
 	class _ProxyStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			return Proxy.newProxyInstance(
 				_loader, 
 				info.interfaces(), 
@@ -166,7 +167,7 @@ public class Reflect {
 			}
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-				Reflect obj = new Reflect(_loader, __adapter);
+				ReflectService obj = new ReflectService(_loader, __adapter);
 				return obj.reflect(proxy, method, __depth, args);
 			}
 		}
@@ -174,7 +175,7 @@ public class Reflect {
 	
 	class _AbstractStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			try{
 				return info.newInstance();
 			}
@@ -189,21 +190,21 @@ public class Reflect {
 	
 	class _EnumStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			return adapter.getEnumValue(info,enclosingInstance,depth);
 		}
 	}
 	
 	class _ObjectStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			return adapter.getObjectValue(info,enclosingInstance,depth);
 		}
 	}
 	
 	class _EmbedStrategy implements InternalAdapterStrategy{
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			return adapter.getEmbedValue(info,enclosingInstance,depth);
 		}
 	}
@@ -211,13 +212,13 @@ public class Reflect {
 	class _DictionaryStrategy implements InternalAdapterStrategy{
 		@SuppressWarnings("unchecked")
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			Map<Object,Object> collection = (Map<Object,Object>)adapter.getMap(info, enclosingInstance, depth);
 
 			int size = adapter.getCollectionSize(info,enclosingInstance,depth);
 			
-			ReflectInfo typeKeyParamInfo = info.typeParameterAt(0);
-			ReflectInfo typeValueParamInfo = info.typeParameterAt(1);
+			ClassInfo typeKeyParamInfo = info.typeParameterAt(0);
+			ClassInfo typeValueParamInfo = info.typeParameterAt(1);
 			for(int idx = 0; idx < size; idx++){
 				Object key = _reflect(typeKeyParamInfo, adapter, enclosingInstance, depth+1);
 				Object value = _reflect(typeValueParamInfo, adapter, enclosingInstance, depth+1);
@@ -230,35 +231,35 @@ public class Reflect {
 
 	class _QueueStrategy extends _LinearCollectionStrategy<Queue<?>>{
 		@Override
-		Queue<?> instance(ReflectInfo info, Object enclosingInstance, ReflectAdapter adapter, Integer depth) {
+		Queue<?> instance(ClassInfo info, Object enclosingInstance, ReflectAdapter adapter, Integer depth) {
 			return adapter.getQueue(info, enclosingInstance, depth);
 		}
 	}
 	
 	class _SetStrategy extends _LinearCollectionStrategy<Set<?>>{
 		@Override
-		Set<?> instance(ReflectInfo info, Object enclosingInstance, ReflectAdapter adapter, Integer depth) {
+		Set<?> instance(ClassInfo info, Object enclosingInstance, ReflectAdapter adapter, Integer depth) {
 			return adapter.getSet(info, enclosingInstance, depth);
 		}
 	}
 	
 	class _ListStrategy extends _LinearCollectionStrategy<List<?>>{
 		@Override
-		List<?> instance(ReflectInfo info, Object enclosingInstance, ReflectAdapter adapter, Integer depth) {
+		List<?> instance(ClassInfo info, Object enclosingInstance, ReflectAdapter adapter, Integer depth) {
 			return adapter.getList(info, enclosingInstance, depth);
 		}
 	}
 	
 	abstract class _LinearCollectionStrategy<T extends Collection<?>> implements InternalAdapterStrategy{
-		abstract T instance(ReflectInfo info, Object enclosingInstance, ReflectAdapter adapter, Integer depth);
+		abstract T instance(ClassInfo info, Object enclosingInstance, ReflectAdapter adapter, Integer depth);
 		@SuppressWarnings("unchecked")
 		@Override
-		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			Collection<Object> collection = (Collection<Object>)instance(info, enclosingInstance, adapter, depth);
 			
 			int size = adapter.getCollectionSize(info,enclosingInstance, depth);
 			
-			ReflectInfo typeParamInfo = info.typeParameterAt(0);
+			ClassInfo typeParamInfo = info.typeParameterAt(0);
 			for(int idx = 0; idx < size; idx++)
 				collection.add(_reflect(typeParamInfo, adapter, adapter, depth+1));
 			
@@ -270,17 +271,17 @@ public class Reflect {
 	/* reflection cache mecanism                                 */
 	/* --------------------------------------------------------- */
 	class _Cache{
-		volatile Map<String,ReflectInfo> _store;
+		volatile Map<String,ClassInfo> _store;
 		public _Cache(){
 			_store = new HashMap<>();
 		}
 		public boolean has(Class<?> clazz){
 			return _store.containsKey(clazz.getName());
 		}
-		public ReflectInfo get(Class<?> clazz){
+		public ClassInfo get(Class<?> clazz){
 			return _store.get(clazz.getName());
 		}
-		public void set(ReflectInfo info){
+		public void set(ClassInfo info){
 			_store.put(info.className(), info);
 		}
 	}	

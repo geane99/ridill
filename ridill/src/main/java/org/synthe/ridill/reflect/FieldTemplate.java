@@ -14,16 +14,12 @@ import org.synthe.ridill.generator.TargetInfo;
  */
 class FieldTemplate extends PropertyTemplate{
 	/**
-	 * target field
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 */
-	private Field _field;
-	/**
 	 * type of the field
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 */
+	private Field _field;
+	
 	/**
 	 * constructor
 	 * @since 2015/01/18
