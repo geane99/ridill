@@ -27,11 +27,11 @@ public class ReflectInfo {
 	public TargetInfo toTargetInfo(Object instance){
 		return _template.toTargetInfo(instance);
 	}
-	public Object newInstance(){
+	public Object newInstance() throws IllegalAccessException, InstantiationException{
 		return _template.newInstance();
 	}
 	public void set(Object instance, Object val) throws IllegalAccessException{
-		if(_template.isProperty()){
+		if(_template.isProperty() || _template.isMethod()){
 			PropertyTemplate prop = (PropertyTemplate)_template;
 			prop.set(instance, val);
 		}

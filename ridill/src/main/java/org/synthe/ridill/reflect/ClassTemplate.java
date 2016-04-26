@@ -113,5 +113,6 @@ class ClassTemplate extends Template{
 		_typeParameters = template.typeParameters();
 		_enclosing = template.enclosing();
 		_parameterizedTypes = template._parameterizedTypes;
+		_properties = template.properties();
 	}
 }

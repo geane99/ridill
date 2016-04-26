@@ -104,30 +104,46 @@ public class Reflect {
 	class _DomainStrategy implements InternalAdapterStrategy{
 		@Override
 		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
-			Object target = info.newInstance();
-			for(ReflectInfo each : info.properties()){
-				if(each.isImmutable())
-					continue;
-				Object val = _reflect(each,adapter,target, depth + 1);
-				try{
-					info.set(target, val);
+			try{
+				Object target = info.newInstance();
+				for(ReflectInfo each : info.properties()){
+					if(each.isImmutable())
+						continue;
+					Object val = _reflect(each,adapter,target, depth + 1);
+					try{
+						each.set(target, val);
+					}
+					catch(IllegalAccessException iae){
+						handlingError(iae);
+					}
 				}
-				catch(IllegalAccessException iae){
-					handlingError(iae);
-				}
+				return target;
 			}
-			return target;
+			catch(IllegalAccessException e){
+				return null;
+			}
+			catch(InstantiationException e){
+				return null;
+			}
 		}
 	}
 	
 	class _ArrayStrategy implements InternalAdapterStrategy{
 		@Override
 		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
-			Object[] arrays = (Object[])info.newInstance();
-			for(int i = 0; i < arrays.length; i++)
-				//TODO impl
-				arrays[i] = _reflect(info, adapter, enclosingInstance, depth + 1);
-			return arrays;
+			try{
+				Object[] arrays = (Object[])info.newInstance();
+				for(int i = 0; i < arrays.length; i++)
+					//TODO impl
+					arrays[i] = _reflect(info, adapter, enclosingInstance, depth + 1);
+				return arrays;
+			}
+			catch(IllegalAccessException e){
+				return null;
+			}
+			catch(InstantiationException e){
+				return null;
+			}
 		}
 	}
 	
@@ -159,7 +175,15 @@ public class Reflect {
 	class _AbstractStrategy implements InternalAdapterStrategy{
 		@Override
 		public Object command(ReflectInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
-			return info.newInstance();
+			try{
+				return info.newInstance();
+			}
+			catch(IllegalAccessException e){
+				return null;
+			}
+			catch(InstantiationException e){
+				return null;
+			}
 		}
 	}
 	

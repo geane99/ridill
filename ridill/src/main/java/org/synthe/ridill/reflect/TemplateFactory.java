@@ -3,6 +3,7 @@ package org.synthe.ridill.reflect;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -17,11 +18,12 @@ class TemplateFactory {
 		Class<?> returnType = method.getReturnType();
 		Type typeParameter = method.getGenericReturnType();
 		
-		Class<?> enclosing = instance != null ? instance.getClass() : method.getDeclaringClass();
+		
+		Class<?> enclosing = instance != null && !(instance instanceof Proxy) ? instance.getClass() : method.getDeclaringClass();
 		Template enclosingTemplate = createByClassType(enclosing);
 		
 		//return type is type parameter of class
-		if(typeParameter != null){
+		if(typeParameter != null && typeParameter instanceof TypeVariable<?>){
 			TypeParameterTemplate typeParameterTemplate = (TypeParameterTemplate)createByTypeVariable(enclosingTemplate, (TypeVariable<?>)typeParameter, TemplateType.methodTypeParameter);
 			ClassTemplate real = (ClassTemplate)enclosingTemplate.findEnclosingParameterizedTypeByTypeVariable(typeParameterTemplate);
 			if(real != null){
@@ -72,7 +74,7 @@ class TemplateFactory {
 		return template;
 	}
 	
-	public static Template createByTypeVariable(Template enclosing, TypeVariable<?> parameterType, TemplateType templateType){
+	public static TypeParameterTemplate createByTypeVariable(Template enclosing, TypeVariable<?> parameterType, TemplateType templateType){
 		TypeParameterTemplate param = new TypeParameterTemplate(templateType, parameterType, enclosing);
 		return param;
 	}
@@ -143,15 +145,17 @@ class TemplateFactory {
 			List<Field> privateFields = Arrays.asList(now.getDeclaredFields());
 			if(privateFields != null)
 				fields.addAll(privateFields);
-			List<Field> publicFields = Arrays.asList(now.getFields());
-			if(publicFields != null)
-				fields.addAll(publicFields);
+//			List<Field> publicFields = Arrays.asList(now.getFields());
+//			if(publicFields != null)
+//				fields.addAll(publicFields);
 			
 			if(fields.size() > 0){
 				for(Field each : fields){
 					if(each.isSynthetic())
 						continue;
 					Class<?> fieldClass = each.getType();
+					if(!each.getDeclaringClass().equals(now))
+						continue;
 					ClassTemplate fieldClassType = createByClassType(fieldClass);
 					FieldTemplate fieldTemplate = new FieldTemplate(each, fieldClassType);
 					fieldTemplate.enclosing(enclosing);

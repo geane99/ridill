@@ -45,14 +45,14 @@ public class ReflectInfoFactoryTest {
 //		printClassInfo(extGenericInnerClassTest.getClass());
 //		
 //		Template t = TemplateFactory.createByClassType(ExtGenericInnerClassTest.class);
-		Method m = ExtendGenericsClassTest.class.getMethod("returnGenericsClassParameter");
-		Object i = new ExtendGenericsClassTest();
-		Template t = TemplateFactory.createByReturnType(m, i);
-		
+//		Method m = ExtendGenericsClassTest.class.getMethod("returnGenericsClassParameter");
+//		Object i = new ExtendGenericsClassTest();
+//		Template t = TemplateFactory.createByReturnType(m, i);
+//		
 		StubFactory f2 = new StubFactory();
 		SimpleInterfaceTest proxy = f2.create(SimpleInterfaceTest.class);
 		Object r = proxy.returnExtendGenericsClassTest();
-		System.out.println("end");
+		System.out.println(r);
 	}
 	
 	private void printClassInfo(Class<?> clazz){

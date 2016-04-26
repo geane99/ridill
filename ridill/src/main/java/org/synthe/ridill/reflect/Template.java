@@ -171,9 +171,9 @@ abstract class Template{
 	 * @version 1.0.0
 	 * @return new instance
 	 */
-	public Object newInstance(){
+	public Object newInstance() throws IllegalAccessException, InstantiationException{
 		//TODO impl
-		return new Object();
+		return _template.newInstance();
 	}
 	/**
 	 * return name of target class
@@ -401,6 +401,8 @@ abstract class Template{
 	 */
 	public void real(Template real){
 		_template = real.template();
+		_parameterizedTypes = real._parameterizedTypes;
+		_classType = real.classType();
 		_typeParameters = real.typeParameters();
 	}
 	

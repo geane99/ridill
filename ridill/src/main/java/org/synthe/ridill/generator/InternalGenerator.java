@@ -109,9 +109,17 @@ class InternalGenerator implements ReflectAdapter{
 	@Override
 	public Object getEnumValue(ReflectInfo info, Object enclosingInstance, Integer depth){
 		if(isSimple()){
-			TargetInfo gi = info.toTargetInfo(enclosingInstance);
-			List<Enum<?>> enums = (List<Enum<?>>)info.newInstance();
-			return _generator.getEnum(gi, enums);
+			try{
+				TargetInfo gi = info.toTargetInfo(enclosingInstance);
+				List<Enum<?>> enums = (List<Enum<?>>)info.newInstance();
+				return _generator.getEnum(gi, enums);
+			}
+			catch(IllegalAccessException e){
+				return null;
+			}
+			catch(InstantiationException e){
+				return null;
+			}
 		}
 		return _extValueGenerator.get(info, enclosingInstance);
 	}
