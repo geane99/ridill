@@ -65,13 +65,11 @@ abstract class PropertyTemplate extends ClassTemplate{
 	 * @param target {@link AccessibleObject}
 	 */
 	protected void setAccessControl(AccessibleObject target){
-		AccessController.doPrivileged(new PrivilegedAction<Object>(){
-			@Override
-			public Object run() {
-				target.setAccessible(true);
-				return null;
-			}
-		});
+		PrivilegedAction<Object> action = () -> {
+			target.setAccessible(true);
+			return null;
+		};
+		AccessController.doPrivileged(action);
 	}
 
 }

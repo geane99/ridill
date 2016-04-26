@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.synthe.ridill.domain.ExtendGenericsClassTest;
+import org.synthe.ridill.domain.SimpleInterfaceTest;
+import org.synthe.ridill.generator.StubFactory;
 
 public class ReflectInfoFactoryTest {
 	@Test
@@ -38,10 +41,17 @@ public class ReflectInfoFactoryTest {
 //		GenericInnerClassTest<HashMap<String,Object>,Integer> genericInnerClassTest = new GenericInnerClassTest<>();
 //		printClassInfo(genericInnerClassTest.getClass());
 //		
-		ExtGenericInnerClassTest extGenericInnerClassTest = new ExtGenericInnerClassTest();
-		printClassInfo(extGenericInnerClassTest.getClass());
+//		ExtGenericInnerClassTest extGenericInnerClassTest = new ExtGenericInnerClassTest();
+//		printClassInfo(extGenericInnerClassTest.getClass());
+//		
+//		Template t = TemplateFactory.createByClassType(ExtGenericInnerClassTest.class);
+		Method m = ExtendGenericsClassTest.class.getMethod("returnGenericsClassParameter");
+		Object i = new ExtendGenericsClassTest();
+		Template t = TemplateFactory.createByReturnType(m, i);
 		
-		Template t = TemplateFactory.createByClassType(ExtGenericInnerClassTest.class);
+		StubFactory f2 = new StubFactory();
+		SimpleInterfaceTest proxy = f2.create(SimpleInterfaceTest.class);
+		Object r = proxy.returnExtendGenericsClassTest();
 		System.out.println("end");
 	}
 	

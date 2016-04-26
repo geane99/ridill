@@ -13,7 +13,7 @@ import org.synthe.ridill.generator.TargetInfo;
  * @since 2015/01/18
  * @version 1.0.0
  */
-public class ClassTemplate extends Template{
+class ClassTemplate extends Template{
 	/**
 	 * see {@link FieldTemplate}
 	 * @since 2015/01/18

@@ -24,6 +24,7 @@ class MethodTemplate extends PropertyTemplate{
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @param field {@link Method}
+	 * @param returnTemplate {@link ClassTemplate}
 	 */
 	public MethodTemplate(Method method, ClassTemplate returnTemplate){
 		super(returnTemplate.template());
@@ -31,6 +32,13 @@ class MethodTemplate extends PropertyTemplate{
 		setAccessControl(_method);
 		override(returnTemplate);
 	}
+	
+	public MethodTemplate(Method method, TypeParameterTemplate returnTemplate){
+		super(returnTemplate.template());
+		_method = method;
+		setAccessControl(_method);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.synthe.ridill.reflect.PropertyTemplate#propertyName()

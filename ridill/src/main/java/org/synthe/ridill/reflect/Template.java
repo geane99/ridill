@@ -15,7 +15,7 @@ import org.synthe.ridill.generator.TargetInfo;
  * @since 2015/01/18
  * @version 1.0.0
  */
-public abstract class Template{
+abstract class Template{
 	/**
 	 * target class
 	 * @since 2015/01/18

@@ -15,16 +15,29 @@ class TemplateFactory {
 	@SuppressWarnings("unused")
 	public static MethodTemplate createByReturnType(Method method, Object instance, Object...args){
 		Class<?> returnType = method.getReturnType();
-		Class<?> enclosing = method.getDeclaringClass();
+		Type typeParameter = method.getGenericReturnType();
 		
-		//TODO impl
-		Map<String,Template> classTypeParameters = getClassTypeParameters(enclosing, enclosing.getSuperclass());
+		Class<?> enclosing = instance != null ? instance.getClass() : method.getDeclaringClass();
+		Template enclosingTemplate = createByClassType(enclosing);
 		
-		ClassTemplate returnTypeTemplate = createByClassType(returnType);
-		
-		
-		MethodTemplate template = new MethodTemplate(method, returnTypeTemplate);
-		return template;
+		//return type is type parameter of class
+		if(typeParameter != null){
+			TypeParameterTemplate typeParameterTemplate = (TypeParameterTemplate)createByTypeVariable(enclosingTemplate, (TypeVariable<?>)typeParameter, TemplateType.methodTypeParameter);
+			ClassTemplate real = (ClassTemplate)enclosingTemplate.findEnclosingParameterizedTypeByTypeVariable(typeParameterTemplate);
+			if(real != null){
+				MethodTemplate template = new MethodTemplate(method, real);
+				return template;
+			}
+			else{
+				MethodTemplate template = new MethodTemplate(method, typeParameterTemplate);
+				return template;
+			}
+		}
+		else{
+			ClassTemplate real = (ClassTemplate)createByClassType(returnType);
+			MethodTemplate template = new MethodTemplate(method, real);
+			return template;
+		}
 	}
 	
 	public static ClassTemplate createByClassType(Class<?> clazz){
@@ -48,7 +61,7 @@ class TemplateFactory {
 		TypeVariable<?>[] parameters = clazz.getTypeParameters();
 		if(parameters != null){
 			for(TypeVariable<?> each : parameters){
-				Template param = createByTypeVariableType(template, each, TemplateType.itsetfTypeParameters);
+				Template param = createByTypeVariable(template, each, TemplateType.itsetfTypeParameters);
 				template.addTypeParameter(param);
 			}
 		}
@@ -59,7 +72,7 @@ class TemplateFactory {
 		return template;
 	}
 	
-	public static Template createByTypeVariableType(Template enclosing, TypeVariable<?> parameterType, TemplateType templateType){
+	public static Template createByTypeVariable(Template enclosing, TypeVariable<?> parameterType, TemplateType templateType){
 		TypeParameterTemplate param = new TypeParameterTemplate(templateType, parameterType, enclosing);
 		return param;
 	}
@@ -87,7 +100,7 @@ class TemplateFactory {
 		TypeVariable<?>[] parameters = clazz.getTypeParameters();
 		if(parameters != null){
 			for(TypeVariable<?> each : parameters){
-				Template param = createByTypeVariableType(template, each, tempalteType);
+				Template param = createByTypeVariable(template, each, tempalteType);
 				template.addTypeParameter(param);
 			}
 		}
@@ -115,7 +128,7 @@ class TemplateFactory {
 		return classTypeParameters;
 	}
 	
-	public static List<Template> createFieldTypeAll(Template enclosing){
+	private static List<Template> createFieldTypeAll(Template enclosing){
 		Class<?> enclosingClass = enclosing.template();
 		List<Template> templates = new ArrayList<Template>();
 		
@@ -146,7 +159,7 @@ class TemplateFactory {
 					TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
 					if(fieldClassTypeVariables != null){
 						for(TypeVariable<?> fieldTypeVariable : fieldClassTypeVariables){
-							Template fieldTypeVariableTemplate = createByTypeVariableType(fieldTemplate, fieldTypeVariable, TemplateType.propertyTypeParameters);
+							Template fieldTypeVariableTemplate = createByTypeVariable(fieldTemplate, fieldTypeVariable, TemplateType.propertyTypeParameters);
 							fieldTemplate.addTypeParameter(fieldTypeVariableTemplate);
 						}
 					}
@@ -185,7 +198,7 @@ class TemplateFactory {
 			return createByParameterizedType(enclosing, (ParameterizedType)type, templateType);
 		}
 		else if(type instanceof TypeVariable<?>){
-			return createByTypeVariableType(enclosing, (TypeVariable<?>)type, TemplateType.propertyTypeParameters);
+			return createByTypeVariable(enclosing, (TypeVariable<?>)type, TemplateType.propertyTypeParameters);
 		}
 		return null;
 	}
