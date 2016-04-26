@@ -12,37 +12,53 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.synthe.ridill.domain.ExtendGenericsClassTest;
+import org.synthe.ridill.domain.SimpleClassTest;
+import org.synthe.ridill.domain.SimpleClassTest.SimpleClassInnerTest;
+import org.synthe.ridill.domain.SimpleInterfaceTest;
+import org.synthe.ridill.generator.StubFactory;
 
-public class ReflectionInfoFactoryTest {
+public class ReflectInfoFactoryTest {
 	@Test
 	public void clsssTypeTest() throws Exception{
-//		class SimpleInMethodClassTest{
-//		}
-//		SimpleInterfaceTest implementation = new SimpleInterfaceTest(){
-//		};
-//		printClassInfo(SimpleInMethodClassTest.class);
-//		printClassInfo(SimpleClassTest.class);
-//		printClassInfo(SimpleClassInnerTest.class);
-//		printClassInfo(SimpleClassStaticInnerTest.class);
-//		printClassInfo(implementation.getClass());
-//		class GenericInMethodClassTest<V>{
-//			V v;
-//		}
-//		//取れない？
-//		GenericInMethodClassTest<String> genericInMethodClassTest = new GenericInMethodClassTest<>();
-//		printClassInfo(genericInMethodClassTest.getClass());
-//		//取れない
-//		GnericsClassTest<String> genericsClassTest = new GnericsClassTest<>();
-//		printClassInfo(genericsClassTest.getClass());
-//
-//		GenericInnerClassTest<HashMap<String,Object>,Integer> genericInnerClassTest = new GenericInnerClassTest<>();
-//		printClassInfo(genericInnerClassTest.getClass());
-//		
+		class SimpleInMethodClassTest{
+		}
+		SimpleInterfaceTest implementation = new SimpleInterfaceTest(){
+			@Override
+			public String returnString() {
+				return null;
+			}
+			@Override
+			public ExtendGenericsClassTest returnExtendGenericsClassTest() {
+				return null;
+			}
+		};
+		printClassInfo(SimpleInMethodClassTest.class);
+		printClassInfo(SimpleClassTest.class);
+		printClassInfo(SimpleClassInnerTest.class);
+		printClassInfo(implementation.getClass());
+		class GenericInMethodClassTest<V>{
+			V v;
+		}
+		//取れない？
+		GenericInMethodClassTest<String> genericInMethodClassTest = new GenericInMethodClassTest<>();
+		printClassInfo(genericInMethodClassTest.getClass());
+
+		GenericInnerClassTest<HashMap<String,Object>,Integer> genericInnerClassTest = new GenericInnerClassTest<>();
+		printClassInfo(genericInnerClassTest.getClass());
+		
 		ExtGenericInnerClassTest extGenericInnerClassTest = new ExtGenericInnerClassTest();
 		printClassInfo(extGenericInnerClassTest.getClass());
+		TemplateFactory _templateFactory = new TemplateFactory();
+		Template t = _templateFactory.createByClassType(ExtGenericInnerClassTest.class);
+		Method m = ExtendGenericsClassTest.class.getMethod("returnGenericsClassParameter");
+		Object i = new ExtendGenericsClassTest();
+		Template t2 = _templateFactory.createByReturnType(m, i);
 		
-		Template t = TemplateFactory.classType(ExtGenericInnerClassTest.class);
-		System.out.println("end");
+		StubFactory f2 = new StubFactory();
+		SimpleInterfaceTest proxy = f2.create(SimpleInterfaceTest.class);
+		Object r = proxy.returnExtendGenericsClassTest();
+		System.out.println(r);
 	}
 	
 	private void printClassInfo(Class<?> clazz){
@@ -55,22 +71,22 @@ public class ReflectionInfoFactoryTest {
 			outTypeVariables(parameters);
 			if(before!=null)
 				outType(before.getGenericSuperclass());
-//			System.out.println("\tisLocalClass : "+now.isLocalClass());
-//			System.out.println("\tisAnonymous : "+now.isAnonymousClass());
-//			System.out.println("\tisMemberClass : "+now.isMemberClass());
-//			System.out.println(" ");
-//			Class<?> enclosing = now.getEnclosingClass();
-//			Class<?> declaring = now.getDeclaringClass();
-//			Class<?>[] declareds = now.getDeclaredClasses();
-//			System.out.println("\tenclosing class : "+(enclosing==null?"null":className(enclosing)));
-//			System.out.println("\tdeclaring class : "+(declaring==null?"null":className(declaring)));
-//			if(declareds!=null){
-//				int i = 0;
-//				for(Class<?> each : declareds){
-//					System.out.println("\tdeclared class("+i+++") : "+(each==null?"null":each.getName()));
-//				}
-//			}
-//			System.out.println(" ");
+			System.out.println("\tisLocalClass : "+now.isLocalClass());
+			System.out.println("\tisAnonymous : "+now.isAnonymousClass());
+			System.out.println("\tisMemberClass : "+now.isMemberClass());
+			System.out.println(" ");
+			Class<?> enclosing = now.getEnclosingClass();
+			Class<?> declaring = now.getDeclaringClass();
+			Class<?>[] declareds = now.getDeclaredClasses();
+			System.out.println("\tenclosing class : "+(enclosing==null?"null":className(enclosing)));
+			System.out.println("\tdeclaring class : "+(declaring==null?"null":className(declaring)));
+			if(declareds!=null){
+				int i = 0;
+				for(Class<?> each : declareds){
+					System.out.println("\tdeclared class("+i+++") : "+(each==null?"null":each.getName()));
+				}
+			}
+			System.out.println(" ");
 			
 			
 			List<Field> fields = new ArrayList<>();

@@ -12,7 +12,16 @@ import java.security.PrivilegedAction;
  * @since 2015/01/18
  * @version 1.0.0
  */
-abstract class PropertyTemplate extends Template{
+abstract class PropertyTemplate extends ClassTemplate{
+	/**
+	 * constructor
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param target
+	 */
+	public PropertyTemplate(Class<?> target) {
+		super(target);
+	}
 	/**
 	 * Get property name. (field name or method name)
 	 * @since 2015/01/18
@@ -49,20 +58,5 @@ abstract class PropertyTemplate extends Template{
 	 * @throws IllegalAccessException when cant access property, thrown {@link IllegalAccessException}
 	 */
 	abstract public Object invoke(Object instance, Object...args) throws InvocationTargetException, IllegalAccessException;
-	/**
-	 * set access to true
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 * @param target {@link AccessibleObject}
-	 */
-	protected void setAccessControl(AccessibleObject target){
-		AccessController.doPrivileged(new PrivilegedAction<Object>(){
-			@Override
-			public Object run() {
-				target.setAccessible(true);
-				return null;
-			}
-		});
-	}
 
 }

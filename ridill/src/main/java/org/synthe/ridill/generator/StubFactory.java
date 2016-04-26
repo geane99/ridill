@@ -27,7 +27,7 @@ public class StubFactory {
 	 * see link {@link ValueGenerator}
 	 * @since 2015/01/18
 	 */
-	private ValueGenerator defaultValueGenerator;
+	private ValueGenerator defaultValueGenerator = new DefaultValueGenerator();
 	/**
 	 * When dont specify in the argument, used as the default.
 	 * see link {@link ClassLoader}

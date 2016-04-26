@@ -1,5 +1,10 @@
 package org.synthe.ridill.reflect;
 
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,13 +14,13 @@ import org.synthe.ridill.generator.TargetInfo;
 
 
 /**
- * Class that provides type information.<br/>
+ * {@link Class} that provides type information.<br/>
  * Template provides {@link Class} information.
  * @author masahiko.ootsuki
  * @since 2015/01/18
  * @version 1.0.0
  */
-public abstract class Template{
+abstract class Template{
 	/**
 	 * target class
 	 * @since 2015/01/18
@@ -82,6 +87,19 @@ public abstract class Template{
 		targetTemplateParameterizedTypes.put(typeVariable.templateName(), real);
 	}
 	/**
+	 * put a pair of generics definition and parameterized type to target class.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param enclosing target class
+	 * @param real parameterized types
+	 */
+	public void addRealParameterizedTypes(Class<?> enclosing, Map<String, Template> realParameterizedTypes){
+		if(_parameterizedTypes == null)
+			_parameterizedTypes = new HashMap<>();
+		_parameterizedTypes.put(enclosing.getName(), realParameterizedTypes);
+	}
+	
+	/**
 	 * find pairs generics definition and parameterized type contained in target class.
 	 * @since 2015/01/18
 	 * @version 1.0.0
@@ -91,8 +109,12 @@ public abstract class Template{
 	public Template findEnclosingParameterizedTypeByTypeVariable(Template typeVariable){
 		Class<?> target = _template;
 		while(target != null){
-			Map<String,Template> targetTemplateParameterizedTypes = _parameterizedTypes.get(target.getName());
-			if(targetTemplateParameterizedTypes != null && targetTemplateParameterizedTypes.containsKey(typeVariable.templateName()))
+			Map<String,Template> targetTemplateParameterizedTypes = 
+				_parameterizedTypes.get(target.getName());
+			
+			if(targetTemplateParameterizedTypes != null && 
+			   targetTemplateParameterizedTypes.containsKey(typeVariable.templateName())
+			)
 				return targetTemplateParameterizedTypes.get(typeVariable.templateName());
 			target = target.getSuperclass();
 		}
@@ -157,11 +179,88 @@ public abstract class Template{
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @return new instance
+	 * @throws IllegalAccessException when cant access constructor, thrown {@link IllegalAccessException}
+	 * @throws InstantiationException see {@link InstantiationException}
+	 * @throws InvocationTargetException when cant access constructor, thrown {@link InvocationTargetException}
 	 */
-	public Object newInstance(){
-		//TODO impl
-		return new Object();
+	public Object newInstance() throws IllegalAccessException, InstantiationException, InvocationTargetException{
+		return _newInstance(this, enclosing());
 	}
+	
+	/**
+	 * return new instance
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return new instance
+	 * @throws IllegalAccessException when cant access constructor, thrown {@link IllegalAccessException}
+	 * @throws InstantiationException see {@link InstantiationException}
+	 * @throws InvocationTargetException when cant access constructor, thrown {@link InvocationTargetException}
+	 */
+	private Object _newInstance(Template target, Template enclosing) throws IllegalAccessException, InstantiationException, InvocationTargetException{
+		Constructor<?> constructor = null;
+		boolean isEnclosing = false;
+		
+		if(isLocalClass()){
+			constructor = target.template().getEnclosingConstructor();
+			isEnclosing = true;
+		}
+		else if(isAnonymousClass()){
+			constructor = target.template().getEnclosingConstructor();
+			isEnclosing = true;
+		}
+		else if(isMemberClass()){
+			try{
+				Class<?> enclosingClass = target.template().getDeclaringClass();
+				constructor = target.template().getDeclaredConstructor(enclosingClass);
+				isEnclosing = true;
+			}
+			catch(NoSuchMethodException nme){
+				throw new InvocationTargetException(nme);
+			}
+		}
+		
+		constructor = constructor == null ? getNoArgConsructor(target) : constructor;
+		//TODO impl?
+		if(constructor == null)
+			throw new InstantiationException();
+		
+		Object[] params = null;
+		if(isEnclosing)
+			params = new Object[]{ enclosing.newInstance() };
+		
+		return constructor.newInstance(params);
+		
+	}
+	
+	private Constructor<?> getNoArgConsructor(Template target){
+		Constructor<?>[] constructors = target.template().getDeclaredConstructors();
+		if(constructors == null)
+			return null;
+		for(Constructor<?> each : constructors)
+			if(each.getParameterCount() == 0)
+				return each;
+		return null;
+	}
+	
+	/**
+	 * when class instance means singleton, return true.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when class instance mean singleton, return true.
+	 */
+	public Boolean isSingleton(){
+		Constructor<?>[] constructors = _template.getDeclaredConstructors();
+		if(constructors == null)
+			return true;
+		for(Constructor<?> each : constructors){
+			if(!each.isAccessible())
+				return false;
+			if(each.isSynthetic())
+				continue;
+		}
+		return true;
+	}
+	
 	/**
 	 * return name of target class
 	 * @since 2015/01/18
@@ -193,7 +292,7 @@ public abstract class Template{
 	 * get type parameter at index.
 	 * @since 2015/01/18
 	 * @version 1.0.0
-	 * @param index array index
+	 * @param index index of array
 	 * @return {@link Template}
 	 */
 	public Template typeParameterAt(Integer index){
@@ -235,10 +334,6 @@ public abstract class Template{
 	 */
 	public Boolean isImmutable(){
 		return false;
-//		return 
-//			_ownerType == TemplateType.property && 
-//			_owner instanceof Member && 
-//			Modifier.isFinal(((Member)_owner).getModifiers());
 	}
 	/**
 	 * return target is field
@@ -381,29 +476,56 @@ public abstract class Template{
 	}
 	
 	/**
-	 * To convert the generic definition the argument as an real
+	 * Convert the generic definition the argument as an real
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 * @param real an entity
 	 */
 	public void real(Template real){
 		_template = real.template();
+		_parameterizedTypes = real._parameterizedTypes;
+		_classType = real.classType();
 		_typeParameters = real.typeParameters();
 	}
+	/**
+	 * set access to true
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param target {@link AccessibleObject}
+	 */
+	protected void setAccessControl(AccessibleObject target){
+		PrivilegedAction<Object> action = () -> {
+			target.setAccessible(true);
+			return target;
+		};
+		AccessController.doPrivileged(action);
+	}
+
+	/**
+	 * Convert this to {@link ClassInfo}
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return {@link ClassInfo}
+	 */
+	public ClassInfo toClassInfo(){
+		return new ClassInfoImpl(this);
+	}
 	
-//	public boolean isList(){
-//		return _classType == ClassType.listType;
-//	}
-//	public boolean isMap(){
-//		return _classType == ClassType.mapType;
-//	}
-//	public boolean isQueue(){
-//		return _classType == ClassType.queueType;
-//	}
-//	public boolean isSet(){
-//		return _classType == ClassType.setType;
-//	}
-//	public boolean isCollection(){
-//		return _classType == ClassType.collectionType;
-//	}
+	/**
+	 * implementation of {@link ClassInfo}
+	 * @author masahiko.ootsuki
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	private class ClassInfoImpl extends ClassInfo{
+		/**
+		 * constructor
+		 * @since 2015/01/18
+		 * @version 1.0.0
+		 * @param template this
+		 */
+		public ClassInfoImpl(Template template){
+			this._template = template;
+		}
+	}
 }

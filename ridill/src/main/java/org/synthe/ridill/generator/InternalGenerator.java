@@ -1,9 +1,19 @@
 package org.synthe.ridill.generator;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
+import org.synthe.ridill.reflect.ReflectAdapter;
 import org.synthe.ridill.reflect.ClassType;
-import org.synthe.ridill.reflect.ReflectionInfo;
+import org.synthe.ridill.reflect.ClassInfo;
 
 /**
  * Class that the connection to {@link ValueGenerator} or {@link ExtValueGenerator} in generating value.
@@ -11,7 +21,7 @@ import org.synthe.ridill.reflect.ReflectionInfo;
  * @since 2015/01/18
  * @version 1.0.0
  */
-class InternalGenerator{
+class InternalGenerator implements ReflectAdapter{
 	/**
 	 * see {@link ExtValueGenerator}
 	 * @since 2015/01/18
@@ -59,16 +69,9 @@ class InternalGenerator{
 	private Boolean isSimple(){
 		return _isSimple;
 	}
-	
-	/**
-	 * Connect to {@link ValueGenerator} or {@link ExtValueGenerator} when generating embed values.
-	 * @since 2015/01/18
- 	 * @version 1.0.0
-	 * @param info {@link ReflectionInfo}
-	 * @param enclosingInstance instance of enclosing class.
-	 * @return generated value
-	 */
-	public Object getEmbedValue(ReflectionInfo info, Object enclosingInstance){
+
+	@Override
+	public Object getEmbedValue(ClassInfo info, Object enclosingInstance, Integer depth){
 		if(isSimple()){
 			TargetInfo gi = info.toTargetInfo(enclosingInstance);
 			
@@ -90,41 +93,84 @@ class InternalGenerator{
 				return _generator.getCharacter(gi);
 			if(info.classType() == ClassType.stringType)
 				return _generator.getString(gi);
-			return getObjectValue(info, enclosingInstance);
+			return getObjectValue(info, enclosingInstance, depth);
 		}
 		
 		return _extValueGenerator.get(info, enclosingInstance);
 	}
 	
-	/**
-	 * Connect to {@link ValueGenerator} or {@link ExtValueGenerator} when generating {@link Object} values.
-	 * @since 2015/01/18
- 	 * @version 1.0.0
-	 * @param info {@link ReflectionInfo}
-	 * @param enclosingInstance instance of enclosing class.
-	 * @return generated value
-	 */
-	public Object getObjectValue(ReflectionInfo info, Object enclosingInstance){
+	@Override
+	public Object getObjectValue(ClassInfo info, Object enclosingInstance, Integer depth){
 		if(isSimple())
 			return new Object();
 		return _extValueGenerator.get(info, enclosingInstance);
 	}
 	
-	/**
-	 * Connect to {@link ValueGenerator} or {@link ExtValueGenerator} when generating enum value.
-	 * @since 2015/01/18
- 	 * @version 1.0.0
-	 * @param info {@link ReflectionInfo}
-	 * @param enclosingInstance instance of enclosing class.
-	 * @return generated value
-	 */
 	@SuppressWarnings("unchecked")
-	public Object getEnumValue(ReflectionInfo info, Object enclosingInstance){
+	@Override
+	public Object getEnumValue(ClassInfo info, Object enclosingInstance, Integer depth){
 		if(isSimple()){
-			TargetInfo gi = info.toTargetInfo(enclosingInstance);
-			List<Enum<?>> enums = (List<Enum<?>>)info.newInstance();
-			return _generator.getEnum(gi, enums);
+			try{
+				TargetInfo gi = info.toTargetInfo(enclosingInstance);
+				List<Enum<?>> enums = (List<Enum<?>>)info.newInstance();
+				return _generator.getEnum(gi, enums);
+			}
+			catch(IllegalAccessException e){
+				return null;
+			}
+			catch(InstantiationException e){
+				return null;
+			}
+			catch(InvocationTargetException e){
+				return null;
+			}
 		}
 		return _extValueGenerator.get(info, enclosingInstance);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends Map<?, ?>> T getMap(ClassInfo info, Object enclosingInstance, Integer depth) {
+		if(isSimple())
+			return (T)new HashMap<>();
+		return _extValueGenerator.dictionary(info);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends List<?>> T getList(ClassInfo info, Object enclosingInstance, Integer depth) {
+		if(isSimple())
+			return (T)new ArrayList<>();
+		return _extValueGenerator.list(info);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends Set<?>> T getSet(ClassInfo info, Object enclosingInstance, Integer depth) {
+		if(isSimple())
+			return (T)new HashSet<>();
+		return _extValueGenerator.set(info);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends Collection<?>> T getCollection(ClassInfo info, Object enclosingInstance, Integer depth) {
+		if(isSimple())
+			return (T)new ArrayList<>();
+		return _extValueGenerator.collection(info);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends Queue<?>> T getQueue(ClassInfo info, Object enclosingInstance, Integer depth) {
+		if(isSimple())
+			return (T)new LinkedList<>();
+		return _extValueGenerator.queue(info);
+	}
+	@Override
+	public Integer getCollectionSize(ClassInfo info, Object enclosingInstance, Integer depth) {
+		if(isSimple())
+			return _generator.getCollectionSize(info.toTargetInfo(enclosingInstance));
+		return _extValueGenerator.size(info);
 	}
 }

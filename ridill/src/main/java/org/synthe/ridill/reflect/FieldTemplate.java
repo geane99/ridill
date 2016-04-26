@@ -14,17 +14,11 @@ import org.synthe.ridill.generator.TargetInfo;
  */
 class FieldTemplate extends PropertyTemplate{
 	/**
-	 * target field
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 */
-	private Field _field;
-	/**
 	 * type of the field
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 */
-	private Template _propertyTemplate;
+	private Field _field;
 	
 	/**
 	 * constructor
@@ -32,32 +26,12 @@ class FieldTemplate extends PropertyTemplate{
 	 * @version 1.0.0
 	 * @param field {@link Field}
 	 */
-	public FieldTemplate(Field field, Class<?> template){
+	public FieldTemplate(Field field, ClassTemplate template){
+		super(template.template());
+		override(template);
 		_field = field;
-		_template = template;
-		_templateType = TemplateType.property;
-		_classType = ClassType.get(template);
 		setAccessControl(_field);
-	}
-	/**
-	 * get {@link Template} of the field
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 * @return {@link Template} of the field
-	 */
-	public Template propertyTemplate(){
-		return _propertyTemplate;
-	}
-	/**
-	 * set {@link Template} of the field
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 * @param propertyTemplate {@link Template} of the field
-	 */
-	public void propertyTemplate(Template propertyTemplate){
-		_propertyTemplate = propertyTemplate;
-		_propertyTemplate._template = template();
-		_propertyTemplate._typeParameters = _typeParameters;
+		_templateType = TemplateType.property;
 	}
 	/*
 	 * (non-Javadoc)
@@ -149,7 +123,7 @@ class FieldTemplate extends PropertyTemplate{
 		 * @see org.synthe.ridill.TargetInfo#eclosingClassName()
 		 */
 		@Override
-		public String eclosingClassName() {
+		public String enclosingClassName() {
 			return _info.enclosing().templateName();
 		}
 		/*

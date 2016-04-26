@@ -28,7 +28,7 @@ public interface TargetInfo {
 	 * @version 1.0.0
 	 * @return name of enclosing class.
 	 */
-	abstract public String eclosingClassName();
+	abstract public String enclosingClassName();
 	/**
 	 * when true, its a property.
 	 * @since 2015/01/18
