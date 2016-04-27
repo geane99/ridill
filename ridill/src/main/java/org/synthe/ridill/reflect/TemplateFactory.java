@@ -36,7 +36,7 @@ class TemplateFactory {
 			instance.getClass() : 
 			method.getDeclaringClass();
 
-		Template enclosingTemplate = createByClassType(enclosing);
+		Template enclosingTemplate = createByClassType(enclosing, null);
 		
 		//return type is type parameter of class
 		if(typeParameter != null && typeParameter instanceof TypeVariable<?>){
@@ -57,7 +57,7 @@ class TemplateFactory {
 			}
 		}
 		else{
-			ClassTemplate real = (ClassTemplate)createByClassType(returnType);
+			ClassTemplate real = (ClassTemplate)createByClassType(returnType, enclosingTemplate);
 			MethodTemplate template = new MethodTemplate(method, real);
 			return template;
 		}
@@ -70,22 +70,34 @@ class TemplateFactory {
 	 * @param clazz target 
 	 * @return {@link Template}
 	 */
-	public ClassTemplate createByClassType(Class<?> clazz){
+	public ClassTemplate createByClassType(Class<?> clazz, Template enclosing){
 		ClassTemplate template = new ClassTemplate(clazz);
 		if(template.isLocalClass()){
-			Class<?> enclosingClass = clazz.getEnclosingClass();
-			Template nestEnclosing = createByClassType(enclosingClass);
-			template.enclosing(nestEnclosing);
+			if(enclosing != null)
+				template.enclosing(enclosing);
+			else{
+				Class<?> enclosingClass = clazz.getEnclosingClass();
+				Template nestEnclosing = createByClassType(enclosingClass, null);
+				template.enclosing(nestEnclosing);
+			}
 		}
 		if(template.isMemberClass()){
-			Class<?> enclosingClass = clazz.getDeclaringClass();
-			Template nestEnclosing = createByClassType(enclosingClass);
-			template.enclosing(nestEnclosing);
+			if(enclosing != null)
+				template.enclosing(enclosing);
+			else{
+				Class<?> enclosingClass = clazz.getDeclaringClass();
+				Template nestEnclosing = createByClassType(enclosingClass, null);
+				template.enclosing(nestEnclosing);
+			}
 		}
 		if(template.isAnonymousClass()){
-			Class<?> enclosingClass = clazz.getEnclosingClass();
-			Template nestEnclosing = createByClassType(enclosingClass);
-			template.enclosing(nestEnclosing);
+			if(enclosing != null)
+				template.enclosing(enclosing);
+			else{
+				Class<?> enclosingClass = clazz.getEnclosingClass();
+				Template nestEnclosing = createByClassType(enclosingClass, null);
+				template.enclosing(nestEnclosing);
+			}
 		}		
 		
 		TypeVariable<?>[] parameters = clazz.getTypeParameters();
@@ -130,8 +142,11 @@ class TemplateFactory {
 					Class<?> fieldClass = each.getType();
 					if(!each.getDeclaringClass().equals(now))
 						continue;
-
-					ClassTemplate fieldClassType = createByClassType(fieldClass);
+					
+					ClassTemplate fieldClassType = !enclosing.isEnum() ?
+						createByClassType(fieldClass, enclosing) : 
+						(ClassTemplate)enclosing
+					;
 					FieldTemplate fieldTemplate = new FieldTemplate(each, fieldClassType);
 					fieldTemplate.enclosing(enclosing);
 					
@@ -296,7 +311,7 @@ class TemplateFactory {
 					int index = 0;
 					
 					for(TypeVariable<?> each : superGenericsTypeDifinition){
-						Template superClassDifinition = createByClassType(now);
+						Template superClassDifinition = createByClassType(now, null);
 
 						Template superClassTypeParameterDifinisionTemplate = createByBaseType(
 							each, 

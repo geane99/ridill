@@ -50,7 +50,7 @@ public class ReflectInfoFactoryTest {
 		ExtGenericInnerClassTest extGenericInnerClassTest = new ExtGenericInnerClassTest();
 		printClassInfo(extGenericInnerClassTest.getClass());
 		TemplateFactory _templateFactory = new TemplateFactory();
-		Template t = _templateFactory.createByClassType(ExtGenericInnerClassTest.class);
+		Template t = _templateFactory.createByClassType(ExtGenericInnerClassTest.class, null);
 		Method m = ExtendGenericsClassTest.class.getMethod("returnGenericsClassParameter");
 		Object i = new ExtendGenericsClassTest();
 		Template t2 = _templateFactory.createByReturnType(m, i);

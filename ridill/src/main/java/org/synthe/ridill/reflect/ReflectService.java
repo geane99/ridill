@@ -12,7 +12,6 @@ import java.util.Queue;
 import java.util.Set;
 
 public class ReflectService {
-	
 	private Map<ClassType, InternalAdapterStrategy> _factoryCache;
 	private _Cache _rcache;
 	private ClassLoader _loader;

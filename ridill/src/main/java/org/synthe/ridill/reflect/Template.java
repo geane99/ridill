@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -219,6 +220,9 @@ abstract class Template{
 			}
 		}
 		
+		if(isEnum())
+			return Arrays.asList(_template.getEnumConstants());
+		
 		constructor = constructor == null ? getNoArgConsructor(target) : constructor;
 		//TODO impl?
 		if(constructor == null)
@@ -232,6 +236,13 @@ abstract class Template{
 		
 	}
 	
+	/**
+	 * find no argument constructor
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param target target
+	 * @return no argument constructor
+	 */
 	private Constructor<?> getNoArgConsructor(Template target){
 		Constructor<?>[] constructors = target.template().getDeclaredConstructors();
 		if(constructors == null)
@@ -240,6 +251,18 @@ abstract class Template{
 			if(each.getParameterCount() == 0)
 				return each;
 		return null;
+	}
+	
+	/**
+	 * Get interfaces that the {@link Class} impmenets.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return interfaces
+	 */
+	public Class<?>[] interfaces(){
+		if(isAnnotation() || isInterface())
+			return new Class<?>[]{_template};
+		return _template.getInterfaces();
 	}
 	
 	/**

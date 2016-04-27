@@ -36,7 +36,7 @@ public class ClassInfo {
 	 * @return the interfaces implemented
 	 */
 	public Class<?>[] interfaces(){
-		return _template.template().getInterfaces();
+		return _template.interfaces();
 	}
 	/**
 	 * Return type information for target 
