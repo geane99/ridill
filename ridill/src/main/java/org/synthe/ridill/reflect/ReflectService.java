@@ -50,6 +50,7 @@ public class ReflectService {
 		_factoryCache.put(ClassType.mapType, new _DictionaryStrategy());
 		_factoryCache.put(ClassType.arrayType, new _ArrayStrategy());
 		_factoryCache.put(ClassType.domainType, new _DomainStrategy());
+		_factoryCache.put(ClassType.typeVariable, new _ObjectStrategy());
 		_rcache = new _Cache();
 	}
 	
@@ -136,13 +137,26 @@ public class ReflectService {
 	class _ArrayStrategy implements InternalAdapterStrategy{
 		@Override
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
-			Integer size = adapter.getCollectionSize(info, enclosingInstance, depth);
-			Object[] arrays = (Object[])info.componentNewInstance(size);
+			Integer[] size = new Integer[info.dimensions()];
+			for(int i = 0; i < size.length; i++)
+				size[i] = adapter.getCollectionSize(info, enclosingInstance, depth+i);
+			
+			Object[] arrays = info.componentNewInstance(size);
 			
 			ClassInfo typeParam = info.typeParameterAt(0);
-			for(int i = 0; i < size; i++)
-				arrays[i] = _reflect(typeParam, adapter, arrays, depth + 1);
-			return arrays;
+			return processArray(arrays, typeParam, adapter, depth);
+		}
+		
+		private Object processArray(Object[] array, ClassInfo typeParam, ReflectAdapter adapter, Integer depth){
+			for(int i = 0; i < array.length; i++){
+				array[i] = isArray(array[i]) ?
+					processArray((Object[])array[i], typeParam, adapter, depth + 1) :
+					_reflect(typeParam, adapter, array, depth + 1);
+			}
+			return array;
+		}
+		private Boolean isArray(Object target){
+			return target instanceof Object[];
 		}
 	}
 	

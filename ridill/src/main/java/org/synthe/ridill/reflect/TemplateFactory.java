@@ -151,11 +151,19 @@ class TemplateFactory {
 					fieldTemplate.enclosing(enclosing);
 					
 					if(fieldTemplate.isArray()){
+						Class<?> componentType = fieldClass.getComponentType();
+						Integer dimensions = 1;
+						while(componentType.isArray()){
+							componentType = componentType.getComponentType();
+							dimensions++;
+						}
+						
 						Template typeParameter = createByBaseType(
-							fieldClass.getComponentType(),
+							componentType,
 							fieldTemplate,
 							TemplateType.propertyTypeParameters
 						);
+						fieldTemplate.dimensions(dimensions);
 						fieldTemplate.addTypeParameter(typeParameter);
 						templates.add(fieldTemplate);
 					}

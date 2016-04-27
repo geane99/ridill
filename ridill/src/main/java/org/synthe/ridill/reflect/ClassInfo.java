@@ -85,7 +85,7 @@ public class ClassInfo {
 	 * @param length size of array
 	 * @return new instance
 	 */
-	public Object[] componentNewInstance(Integer length){
+	public Object[] componentNewInstance(Integer...length){
 		return _template.componentNewInstance(length);
 	}
 	/**
@@ -148,5 +148,14 @@ public class ClassInfo {
 		Template t = _template.typeParameterAt(idx);
 		ClassInfo typeInfo = t.toClassInfo();
 		return typeInfo;
+	}
+	/**
+	 * Get dimensions of array
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return dimensions of array
+	 */
+	public Integer dimensions(){
+		return _template.dimensions();
 	}
 }

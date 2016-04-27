@@ -54,6 +54,12 @@ abstract class Template{
 	 */
 	protected Template _enclosing;
 	/**
+	 * dimensions of array
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	protected Integer _dimensions;
+	/**
 	 * set In generics definition and parameterized type are paired<br/>
 	 * <pre>
 	 * {@code
@@ -177,6 +183,24 @@ abstract class Template{
 		return _classType;
 	}
 	/**
+	 * Set dimensions of array
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param dimensions dimensions of array
+	 */
+	public void dimensions(Integer dimensions){
+		_dimensions = dimensions;
+	}
+	/**
+	 * Get dimensions of array
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return dimensions of array
+	 */
+	public Integer dimensions(){
+		return _dimensions;
+	}
+	/**
 	 * return new instance
 	 * @since 2015/01/18
 	 * @version 1.0.0
@@ -192,12 +216,16 @@ abstract class Template{
 	 * return new array instance
 	 * @since 2015/01/18
 	 * @version 1.0.0
-	 * @param length size of array
+	 * @param s size of array
 	 * @return new instance
 	 */
-	public Object[] componentNewInstance(Integer length){
-		Class<?> arrayClass = _template.getComponentType();
-		return (Object[])Array.newInstance(arrayClass, length);
+	public Object[] componentNewInstance(Integer...s){
+		Class<?> arrayClass = typeParameterAt(0).template();
+		int[] l = new int[s.length];
+		for(int i = 0; i < s.length; i++)
+			l[i] = s[i];
+		
+		return (Object[])Array.newInstance(arrayClass, l);
 	}
 	
 	/**
