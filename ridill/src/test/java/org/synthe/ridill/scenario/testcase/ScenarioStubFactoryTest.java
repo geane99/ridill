@@ -12,6 +12,7 @@ import org.synthe.ridill.generator.StubFactory;
 import org.synthe.ridill.generator.TargetInfo;
 import org.synthe.ridill.generator.ValueGenerator;
 import org.synthe.ridill.scenario.domain.TestAnnotation;
+import org.synthe.ridill.scenario.domain.TestArray;
 import org.synthe.ridill.scenario.domain.TestCollections;
 import org.synthe.ridill.scenario.domain.TestEmbed;
 import org.synthe.ridill.scenario.domain.TestEntity;
@@ -66,6 +67,15 @@ public class ScenarioStubFactoryTest {
 		public Enum<?> getEnum(TargetInfo info, List<Enum<?>> enums) {
 			return enums.get(0);
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private List<Enum<?>> toEnumList(Class<?> e){
+		return (List<Enum<?>>)Arrays.asList(e.getEnumConstants());
+	}
+	
+	private <T> List<?> toList(T[] t){
+		return Arrays.asList(t);
 	}
 	
 	@Test
@@ -147,12 +157,7 @@ public class ScenarioStubFactoryTest {
 		Double doubleExpected = generator.getDouble(null);
 		assertThat(doubleActual, is(equalTo(doubleExpected)));
 	}
-	
-	@SuppressWarnings("unchecked")
-	private List<Enum<?>> toEnumList(Class<?> e){
-		return (List<Enum<?>>)Arrays.asList(e.getEnumConstants());
-	}
-	
+
 	@Test
 	public void testEnum(){
 		ValueGeneratorForTesting generator = new ValueGeneratorForTesting();
@@ -436,6 +441,20 @@ public class ScenarioStubFactoryTest {
 			TestEnum enumActual = entity.getFieldEnum();
 			TestEnum enumExpected = (TestEnum)generator.getEnum(null, toEnumList(TestEnum.class));
 			assertThat(enumActual, is(equalTo(enumExpected)));
+		});
+	}
+	
+	@Test
+	public void testArray(){
+		ValueGeneratorForTesting generator = new ValueGeneratorForTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestArray instance = test.returnTestArray();
+		
+		
+		assertThat(instance.getIntegerArray1().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getIntegerArray1()).forEach((i)->{
+			assertThat((Integer)i, is(equalTo(generator.getInteger(null))));
 		});
 	}
 }

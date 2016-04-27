@@ -150,38 +150,49 @@ class TemplateFactory {
 					FieldTemplate fieldTemplate = new FieldTemplate(each, fieldClassType);
 					fieldTemplate.enclosing(enclosing);
 					
-					TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
-					if(fieldClassTypeVariables != null){
-						for(TypeVariable<?> fieldTypeVariable : fieldClassTypeVariables){
-							Template fieldTypeVariableTemplate = createByTypeVariable(
-								fieldTemplate, 
-								fieldTypeVariable, 
-								TemplateType.propertyTypeParameters
-							);
-							fieldTemplate.addTypeParameter(fieldTypeVariableTemplate);
-						}
+					if(fieldTemplate.isArray()){
+						Template typeParameter = createByBaseType(
+							fieldClass.getComponentType(),
+							fieldTemplate,
+							TemplateType.propertyTypeParameters
+						);
+						fieldTemplate.addTypeParameter(typeParameter);
+						templates.add(fieldTemplate);
 					}
-					
-					Type type = each.getGenericType();
-					Template typeTemplate = createByBaseType(
-						type, 
-						fieldTemplate, 
-						TemplateType.propertyTypeParameters
-					);
-					
-					if(typeTemplate instanceof TypeParameterTemplate){
-						TypeParameterTemplate parameterTemplate = (TypeParameterTemplate)typeTemplate;
-						if(parameterTemplate.isTypeVariableParameter()){
-							Template real = classTypeParameters.get(parameterTemplate.templateName());
-							if(real != null){
-								parameterTemplate.real(real);
-								fieldTemplate.real(parameterTemplate);
+					else{
+						TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
+						if(fieldClassTypeVariables != null){
+							for(TypeVariable<?> fieldTypeVariable : fieldClassTypeVariables){
+								Template fieldTypeVariableTemplate = createByTypeVariable(
+									fieldTemplate, 
+									fieldTypeVariable, 
+									TemplateType.propertyTypeParameters
+								);
+								fieldTemplate.addTypeParameter(fieldTypeVariableTemplate);
 							}
 						}
+						
+						Type type = each.getGenericType();
+						Template typeTemplater = createByBaseType(
+							type, 
+							fieldTemplate, 
+							TemplateType.propertyTypeParameters
+						);
+						if(typeTemplater instanceof TypeParameterTemplate){
+							TypeParameterTemplate parameterTemplate = (TypeParameterTemplate)typeTemplater;
+							if(parameterTemplate.isTypeVariableParameter()){
+								Template real = classTypeParameters.get(parameterTemplate.templateName());
+								if(real != null){
+									parameterTemplate.real(real);
+									fieldTemplate.real(parameterTemplate);
+								}
+							}
+						}
+						else if(typeTemplater instanceof ClassTemplate)
+							fieldTemplate.real(typeTemplater);
+						templates.add(fieldTemplate);
 					}
-					else if(typeTemplate instanceof ClassTemplate)
-						fieldTemplate.real(typeTemplate);
-					templates.add(fieldTemplate);
+					//end for
 				}
 			}
 			before = now;

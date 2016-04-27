@@ -79,6 +79,16 @@ public class ClassInfo {
 		return _template.newInstance();
 	}
 	/**
+	 * create new array instance.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param length size of array
+	 * @return new instance
+	 */
+	public Object[] componentNewInstance(Integer length){
+		return _template.componentNewInstance(length);
+	}
+	/**
 	 * set the value for property.
 	 * @since 2015/01/18
 	 * @version 1.0.0

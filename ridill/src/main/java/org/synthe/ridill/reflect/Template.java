@@ -1,6 +1,7 @@
 package org.synthe.ridill.reflect;
 
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
@@ -186,6 +187,17 @@ abstract class Template{
 	 */
 	public Object newInstance() throws IllegalAccessException, InstantiationException, InvocationTargetException{
 		return _newInstance(this, enclosing());
+	}
+	/**
+	 * return new array instance
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param length size of array
+	 * @return new instance
+	 */
+	public Object[] componentNewInstance(Integer length){
+		Class<?> arrayClass = _template.getComponentType();
+		return (Object[])Array.newInstance(arrayClass, length);
 	}
 	
 	/**

@@ -136,22 +136,13 @@ public class ReflectService {
 	class _ArrayStrategy implements InternalAdapterStrategy{
 		@Override
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
-			try{
-				Object[] arrays = (Object[])info.newInstance();
-				for(int i = 0; i < arrays.length; i++)
-					//TODO impl
-					arrays[i] = _reflect(info, adapter, enclosingInstance, depth + 1);
-				return arrays;
-			}
-			catch(IllegalAccessException e){
-				return null;
-			}
-			catch(InstantiationException e){
-				return null;
-			}
-			catch(InvocationTargetException e){
-				return null;
-			}
+			Integer size = adapter.getCollectionSize(info, enclosingInstance, depth);
+			Object[] arrays = (Object[])info.componentNewInstance(size);
+			
+			ClassInfo typeParam = info.typeParameterAt(0);
+			for(int i = 0; i < size; i++)
+				arrays[i] = _reflect(typeParam, adapter, arrays, depth + 1);
+			return arrays;
 		}
 	}
 	
