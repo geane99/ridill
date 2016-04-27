@@ -44,6 +44,7 @@ public class ReflectService {
 		_factoryCache.put(ClassType.annotationType, proxyFactory);
 		_factoryCache.put(ClassType.abstractType, new _AbstractStrategy());
 		_factoryCache.put(ClassType.listType, new _ListStrategy());
+		_factoryCache.put(ClassType.collectionType, new _ListStrategy());
 		_factoryCache.put(ClassType.setType,  new _SetStrategy());
 		_factoryCache.put(ClassType.queueType, new _QueueStrategy());
 		_factoryCache.put(ClassType.mapType, new _DictionaryStrategy());
@@ -270,7 +271,7 @@ public class ReflectService {
 			
 			ClassInfo typeParamInfo = info.typeParameterAt(0);
 			for(int idx = 0; idx < size; idx++)
-				collection.add(_reflect(typeParamInfo, adapter, adapter, depth+1));
+				collection.add(_reflect(typeParamInfo, adapter, collection, depth+1));
 			
 			return collection;
 		}

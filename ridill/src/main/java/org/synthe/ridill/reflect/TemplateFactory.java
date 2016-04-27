@@ -253,6 +253,10 @@ class TemplateFactory {
 				template.addTypeParameter(param);
 			}
 		}
+		if(!template.isEmbedClass() && !template.isEnum()){
+			List<Template> fields = createFieldTypeAll(template);
+			template.properties(fields);
+		}
 		return template;
 	}
 	
