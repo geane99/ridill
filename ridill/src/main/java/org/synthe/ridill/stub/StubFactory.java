@@ -1,7 +1,11 @@
-package org.synthe.ridill.generator;
+package org.synthe.ridill.stub;
 
 import java.lang.reflect.Proxy;
 import java.util.Collection;
+
+import org.synthe.ridill.generate.DefaultValueGenerator;
+import org.synthe.ridill.generate.ExtValueGenerator;
+import org.synthe.ridill.generate.ValueGenerator;
 
 /**
  * create a dynamic proxy to set the return value in the auto.<br/>

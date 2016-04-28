@@ -1,6 +1,8 @@
-package org.synthe.ridill.generator;
+package org.synthe.ridill.generate;
 
 import java.util.List;
+
+import org.synthe.ridill.stub.TargetInfo;
 
 /**
  * ValueGenerator that generates the value of the stub.<br/>

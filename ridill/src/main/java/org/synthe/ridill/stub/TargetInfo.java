@@ -1,4 +1,4 @@
-package org.synthe.ridill.generator;
+package org.synthe.ridill.stub;
 
 /**
  * When creating a value,TargetInfo with the information that would be helpful.<br/>

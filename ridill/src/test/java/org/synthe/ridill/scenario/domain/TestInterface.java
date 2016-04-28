@@ -5,7 +5,6 @@ import java.util.List;
 public interface TestInterface {
 	public TestAbstract returnTestAbstract();
 	public TestAnnotation returnTestAnnotation();
-	public TestAnonymous returnTestAnonymous();
 	public TestArray returnTestArray();
 	public TestCollections returnTestCollections();
 	public TestEmbed returnTestEmbed();

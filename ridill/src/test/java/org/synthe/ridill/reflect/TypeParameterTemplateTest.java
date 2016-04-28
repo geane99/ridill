@@ -9,7 +9,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
 
 import org.junit.Test;
-import org.synthe.ridill.generator.TargetInfo;
+import org.synthe.ridill.stub.TargetInfo;
 public class TypeParameterTemplateTest {
 	
 	class LocalGenericsClass<T>{

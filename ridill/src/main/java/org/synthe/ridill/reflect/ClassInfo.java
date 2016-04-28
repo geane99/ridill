@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.synthe.ridill.generator.TargetInfo;
+import org.synthe.ridill.stub.TargetInfo;
 
 /**
  * Provide {@link Class} information.

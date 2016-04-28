@@ -50,7 +50,7 @@ public class ReflectService {
 		_factoryCache.put(ClassType.mapType, new _DictionaryStrategy());
 		_factoryCache.put(ClassType.arrayType, new _ArrayStrategy());
 		_factoryCache.put(ClassType.domainType, new _DomainStrategy());
-		_factoryCache.put(ClassType.typeVariable, new _ObjectStrategy());
+		_factoryCache.put(ClassType.typeVariable, new _TypeVariableStrategy());
 		_rcache = new _Cache();
 	}
 	
@@ -205,6 +205,13 @@ public class ReflectService {
 			catch(InvocationTargetException e){
 				return null;
 			}
+		}
+	}
+
+	class _TypeVariableStrategy implements InternalAdapterStrategy{
+		@Override
+		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
+			return null;
 		}
 	}
 	

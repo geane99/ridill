@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import org.junit.Test;
-import org.synthe.ridill.generator.TargetInfo;
+import org.synthe.ridill.stub.TargetInfo;
 public class FieldTemplateTest {
 	class LocalClass{
 		public String field1 = "test1";
