@@ -78,53 +78,41 @@ public class ScenarioStubFactoryTest {
 		return Arrays.asList(t);
 	}
 	
-	@Test
-	public void testPrimitive(){
-		ValueGeneratorForTesting generator = new ValueGeneratorForTesting();
-		StubFactory factory = new StubFactory();
-		TestInterface test = factory.create(generator, TestInterface.class);
-		TestPrimitive primitive = test.returnTestPrimitive();
+	private void testGenerateTestPrimitive(TestPrimitive primitive, ValueGeneratorForTesting generator){
+		boolean booleanActual2 = primitive.isFieldBoolean();
+		boolean booleanExpected2 = generator.getBoolean(null);
+		assertThat(booleanActual2, is(equalTo(booleanExpected2)));
+		
+		byte byteActual2 = primitive.getFieldByte();
+		byte byteExpected2 = generator.getByte(null);
+		assertThat(byteActual2, is(equalTo(byteExpected2)));
+		
+		char charActual2 = primitive.getFieldCharacter();
+		char charExpected2 = generator.getCharacter(null);
+		assertThat(charActual2, is(equalTo(charExpected2)));
+		
+		short shortActual2 = primitive.getFieldShort();
+		short shortExpected2 = generator.getShort(null);
+		assertThat(shortActual2, is(equalTo(shortExpected2)));
+		
+		int intActual2 = primitive.getFieldInteger();
+		int intExpected2 = generator.getInteger(null);
+		assertThat(intActual2, is(equalTo(intExpected2)));
 
-		boolean booleanActual = primitive.isFieldBoolean();
-		boolean booleanExpected = generator.getBoolean(null);
-		assertThat(booleanActual, is(equalTo(booleanExpected)));
-		
-		byte byteActual = primitive.getFieldByte();
-		byte byteExpected = generator.getByte(null);
-		assertThat(byteActual, is(equalTo(byteExpected)));
-		
-		char charActual = primitive.getFieldCharacter();
-		char charExpected = generator.getCharacter(null);
-		assertThat(charActual, is(equalTo(charExpected)));
-		
-		short shortActual = primitive.getFieldShort();
-		short shortExpected = generator.getShort(null);
-		assertThat(shortActual, is(equalTo(shortExpected)));
-		
-		int intActual = primitive.getFieldInteger();
-		int intExpected = generator.getInteger(null);
-		assertThat(intActual, is(equalTo(intExpected)));
+		long longActual2 = primitive.getFieldLong();
+		long longExpected2 = generator.getLong(null);
+		assertThat(longActual2, is(equalTo(longExpected2)));
 
-		long longActual = primitive.getFieldLong();
-		long longExpected = generator.getLong(null);
-		assertThat(longActual, is(equalTo(longExpected)));
-
-		float floatActual = primitive.getFieldFloat();
-		float floatExpected = generator.getFloat(null);
-		assertThat(floatActual, is(equalTo(floatExpected)));
+		float floatActual2 = primitive.getFieldFloat();
+		float floatExpected2 = generator.getFloat(null);
+		assertThat(floatActual2, is(equalTo(floatExpected2)));
 		
-		double doubleActual = primitive.getFieldDouble();
-		double doubleExpected = generator.getDouble(null);
-		assertThat(doubleActual, is(equalTo(doubleExpected)));
+		double doubleActual2 = primitive.getFieldDouble();
+		double doubleExpected2 = generator.getDouble(null);
+		assertThat(doubleActual2, is(equalTo(doubleExpected2)));
 	}
 	
-	@Test
-	public void testEmbed(){
-		ValueGeneratorForTesting generator = new ValueGeneratorForTesting();
-		StubFactory factory = new StubFactory();
-		TestInterface test = factory.create(generator, TestInterface.class);
-		TestEmbed embed = test.returnTestEmbed();
-
+	private void testGenerateTestEmbed(TestEmbed embed, ValueGeneratorForTesting generator){
 		Boolean booleanActual = embed.getFieldBoolean();
 		Boolean booleanExpected = generator.getBoolean(null);
 		assertThat(booleanActual, is(equalTo(booleanExpected)));
@@ -157,6 +145,46 @@ public class ScenarioStubFactoryTest {
 		Double doubleExpected = generator.getDouble(null);
 		assertThat(doubleActual, is(equalTo(doubleExpected)));
 	}
+	
+	private void testGenerateTestEntity(TestEntity entity, ValueGeneratorForTesting generator){
+		TestEmbed embed = entity.getDomain1();
+		testGenerateTestEmbed(embed, generator);
+		
+		TestPrimitive primitive = entity.getDomain2();
+		testGenerateTestPrimitive(primitive, generator);
+
+		String stringActual = entity.getString();
+		String stringExpected = generator.getString(null);
+		assertThat(stringActual, is(equalTo(stringExpected)));
+		
+		Integer integerActual = entity.getInteger();
+		Integer integerExpected = generator.getInteger(null);
+		assertThat(integerActual, is(equalTo(integerExpected)));
+
+		TestEnum enumActual = entity.getFieldEnum();
+		TestEnum enumExpected = (TestEnum)generator.getEnum(null, toEnumList(TestEnum.class));
+		assertThat(enumActual, is(equalTo(enumExpected)));
+	}
+	
+	@Test
+	public void testPrimitive(){
+		ValueGeneratorForTesting generator = new ValueGeneratorForTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestPrimitive primitive = test.returnTestPrimitive();
+
+		testGenerateTestPrimitive(primitive, generator);
+	}
+	
+	@Test
+	public void testEmbed(){
+		ValueGeneratorForTesting generator = new ValueGeneratorForTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestEmbed embed = test.returnTestEmbed();
+
+		testGenerateTestEmbed(embed, generator);
+	}
 
 	@Test
 	public void testEnum(){
@@ -176,86 +204,7 @@ public class ScenarioStubFactoryTest {
 		StubFactory factory = new StubFactory();
 		TestInterface test = factory.create(generator, TestInterface.class);
 		TestEntity entity = test.returnTestEntity();
-		
-		TestEmbed embed = entity.getDomain1();
-
-		Boolean booleanActual1 = embed.getFieldBoolean();
-		Boolean booleanExpected1 = generator.getBoolean(null);
-		assertThat(booleanActual1, is(equalTo(booleanExpected1)));
-		
-		Byte byteActual1 = embed.getFieldByte();
-		Byte byteExpected1 = generator.getByte(null);
-		assertThat(byteActual1, is(equalTo(byteExpected1)));
-		
-		Character charActual1 = embed.getFieldCharacter();
-		Character charExpected1 = generator.getCharacter(null);
-		assertThat(charActual1, is(equalTo(charExpected1)));
-		
-		Short shortActual1 = embed.getFieldShort();
-		Short shortExpected1 = generator.getShort(null);
-		assertThat(shortActual1, is(equalTo(shortExpected1)));
-		
-		Integer intActual1 = embed.getFieldInteger();
-		Integer intExpected1 = generator.getInteger(null);
-		assertThat(intActual1, is(equalTo(intExpected1)));
-
-		Long longActual1 = embed.getFieldLong();
-		Long longExpected1 = generator.getLong(null);
-		assertThat(longActual1, is(equalTo(longExpected1)));
-
-		Float floatActual1 = embed.getFieldFloat();
-		Float floatExpected1 = generator.getFloat(null);
-		assertThat(floatActual1, is(equalTo(floatExpected1)));
-		
-		Double doubleActual1 = embed.getFieldDouble();
-		Double doubleExpected1 = generator.getDouble(null);
-		assertThat(doubleActual1, is(equalTo(doubleExpected1)));
-		
-		TestPrimitive primitive = entity.getDomain2();
-
-		boolean booleanActual2 = primitive.isFieldBoolean();
-		boolean booleanExpected2 = generator.getBoolean(null);
-		assertThat(booleanActual2, is(equalTo(booleanExpected2)));
-		
-		byte byteActual2 = primitive.getFieldByte();
-		byte byteExpected2 = generator.getByte(null);
-		assertThat(byteActual2, is(equalTo(byteExpected2)));
-		
-		char charActual2 = primitive.getFieldCharacter();
-		char charExpected2 = generator.getCharacter(null);
-		assertThat(charActual2, is(equalTo(charExpected2)));
-		
-		short shortActual2 = primitive.getFieldShort();
-		short shortExpected2 = generator.getShort(null);
-		assertThat(shortActual2, is(equalTo(shortExpected2)));
-		
-		int intActual2 = primitive.getFieldInteger();
-		int intExpected2 = generator.getInteger(null);
-		assertThat(intActual2, is(equalTo(intExpected2)));
-
-		long longActual2 = primitive.getFieldLong();
-		long longExpected2 = generator.getLong(null);
-		assertThat(longActual2, is(equalTo(longExpected2)));
-
-		float floatActual2 = primitive.getFieldFloat();
-		float floatExpected2 = generator.getFloat(null);
-		assertThat(floatActual2, is(equalTo(floatExpected2)));
-		
-		double doubleActual2 = primitive.getFieldDouble();
-		double doubleExpected2 = generator.getDouble(null);
-		assertThat(doubleActual2, is(equalTo(doubleExpected2)));
-		
-		String stringActual = entity.getString();
-		String stringExpected = generator.getString(null);
-		assertThat(stringActual, is(equalTo(stringExpected)));
-		
-		Integer integerActual = entity.getInteger();
-		Integer integerExpected = generator.getInteger(null);
-		assertThat(integerActual, is(equalTo(integerExpected)));
-
-		TestEnum enumActual = entity.getFieldEnum();
-		TestEnum enumExpected = (TestEnum)generator.getEnum(null, toEnumList(TestEnum.class));
-		assertThat(enumActual, is(equalTo(enumExpected)));
+		testGenerateTestEntity(entity, generator);
 	}
 	
 	@Test
@@ -318,37 +267,7 @@ public class ScenarioStubFactoryTest {
 		
 		assertThat(collections.getDomain().size(), is(equalTo(generator.getCollectionSize(null))));
 		collections.getDomain().forEach((embed)->{
-			Boolean booleanActual1 = embed.getFieldBoolean();
-			Boolean booleanExpected1 = generator.getBoolean(null);
-			assertThat(booleanActual1, is(equalTo(booleanExpected1)));
-			
-			Byte byteActual1 = embed.getFieldByte();
-			Byte byteExpected1 = generator.getByte(null);
-			assertThat(byteActual1, is(equalTo(byteExpected1)));
-			
-			Character charActual1 = embed.getFieldCharacter();
-			Character charExpected1 = generator.getCharacter(null);
-			assertThat(charActual1, is(equalTo(charExpected1)));
-			
-			Short shortActual1 = embed.getFieldShort();
-			Short shortExpected1 = generator.getShort(null);
-			assertThat(shortActual1, is(equalTo(shortExpected1)));
-			
-			Integer intActual1 = embed.getFieldInteger();
-			Integer intExpected1 = generator.getInteger(null);
-			assertThat(intActual1, is(equalTo(intExpected1)));
-
-			Long longActual1 = embed.getFieldLong();
-			Long longExpected1 = generator.getLong(null);
-			assertThat(longActual1, is(equalTo(longExpected1)));
-
-			Float floatActual1 = embed.getFieldFloat();
-			Float floatExpected1 = generator.getFloat(null);
-			assertThat(floatActual1, is(equalTo(floatExpected1)));
-			
-			Double doubleActual1 = embed.getFieldDouble();
-			Double doubleExpected1 = generator.getDouble(null);
-			assertThat(doubleActual1, is(equalTo(doubleExpected1)));
+			testGenerateTestEmbed(embed, generator);
 		});
 		
 		
@@ -362,85 +281,7 @@ public class ScenarioStubFactoryTest {
 		
 		assertThat(collections.getNestDomain().size(), is(equalTo(generator.getCollectionSize(null))));
 		collections.getNestDomain().forEach((entity)->{
-			TestEmbed embed = entity.getDomain1();
-
-			Boolean booleanActual1 = embed.getFieldBoolean();
-			Boolean booleanExpected1 = generator.getBoolean(null);
-			assertThat(booleanActual1, is(equalTo(booleanExpected1)));
-			
-			Byte byteActual1 = embed.getFieldByte();
-			Byte byteExpected1 = generator.getByte(null);
-			assertThat(byteActual1, is(equalTo(byteExpected1)));
-			
-			Character charActual1 = embed.getFieldCharacter();
-			Character charExpected1 = generator.getCharacter(null);
-			assertThat(charActual1, is(equalTo(charExpected1)));
-			
-			Short shortActual1 = embed.getFieldShort();
-			Short shortExpected1 = generator.getShort(null);
-			assertThat(shortActual1, is(equalTo(shortExpected1)));
-			
-			Integer intActual1 = embed.getFieldInteger();
-			Integer intExpected1 = generator.getInteger(null);
-			assertThat(intActual1, is(equalTo(intExpected1)));
-
-			Long longActual1 = embed.getFieldLong();
-			Long longExpected1 = generator.getLong(null);
-			assertThat(longActual1, is(equalTo(longExpected1)));
-
-			Float floatActual1 = embed.getFieldFloat();
-			Float floatExpected1 = generator.getFloat(null);
-			assertThat(floatActual1, is(equalTo(floatExpected1)));
-			
-			Double doubleActual1 = embed.getFieldDouble();
-			Double doubleExpected1 = generator.getDouble(null);
-			assertThat(doubleActual1, is(equalTo(doubleExpected1)));
-			
-			TestPrimitive primitive = entity.getDomain2();
-
-			boolean booleanActual2 = primitive.isFieldBoolean();
-			boolean booleanExpected2 = generator.getBoolean(null);
-			assertThat(booleanActual2, is(equalTo(booleanExpected2)));
-			
-			byte byteActual2 = primitive.getFieldByte();
-			byte byteExpected2 = generator.getByte(null);
-			assertThat(byteActual2, is(equalTo(byteExpected2)));
-			
-			char charActual2 = primitive.getFieldCharacter();
-			char charExpected2 = generator.getCharacter(null);
-			assertThat(charActual2, is(equalTo(charExpected2)));
-			
-			short shortActual2 = primitive.getFieldShort();
-			short shortExpected2 = generator.getShort(null);
-			assertThat(shortActual2, is(equalTo(shortExpected2)));
-			
-			int intActual2 = primitive.getFieldInteger();
-			int intExpected2 = generator.getInteger(null);
-			assertThat(intActual2, is(equalTo(intExpected2)));
-
-			long longActual2 = primitive.getFieldLong();
-			long longExpected2 = generator.getLong(null);
-			assertThat(longActual2, is(equalTo(longExpected2)));
-
-			float floatActual2 = primitive.getFieldFloat();
-			float floatExpected2 = generator.getFloat(null);
-			assertThat(floatActual2, is(equalTo(floatExpected2)));
-			
-			double doubleActual2 = primitive.getFieldDouble();
-			double doubleExpected2 = generator.getDouble(null);
-			assertThat(doubleActual2, is(equalTo(doubleExpected2)));
-			
-			String stringActual = entity.getString();
-			String stringExpected = generator.getString(null);
-			assertThat(stringActual, is(equalTo(stringExpected)));
-			
-			Integer integerActual = entity.getInteger();
-			Integer integerExpected = generator.getInteger(null);
-			assertThat(integerActual, is(equalTo(integerExpected)));
-
-			TestEnum enumActual = entity.getFieldEnum();
-			TestEnum enumExpected = (TestEnum)generator.getEnum(null, toEnumList(TestEnum.class));
-			assertThat(enumActual, is(equalTo(enumExpected)));
+			testGenerateTestEntity(entity, generator);
 		});
 	}
 	
@@ -487,6 +328,63 @@ public class ScenarioStubFactoryTest {
 			assertThat(i2.size(), is(equalTo(generator.getCollectionSize(null))));
 			i2.forEach((i3)->{
 				assertThat((String)i3, is(equalTo(generator.getString(null))));
+			});
+		});
+		
+		assertThat(instance.getListIntegerArray2().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getListIntegerArray2()).forEach((i)->{
+			List<Integer>[] i2 = (List<Integer>[])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+
+			toList(i2).forEach(i3 -> {
+				List<Integer> i4 = (List<Integer>)i3;
+				assertThat(i4.size(), is(equalTo(generator.getCollectionSize(null))));
+				i4.forEach(i5 -> {
+					assertThat((Integer)i5, is(equalTo(generator.getInteger(null))));
+				});
+			});
+		});
+		
+		assertThat(instance.getListDomainArray1().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getListDomainArray1()).forEach((i)->{
+			List<TestEmbed> i2 = (List<TestEmbed>)i;
+			assertThat(i2.size(), is(equalTo(generator.getCollectionSize(null))));
+			i2.forEach((i3)->{
+				TestEmbed embed = (TestEmbed)i3;
+				testGenerateTestEmbed(embed, generator);
+			});
+		});
+
+		
+		assertThat(instance.getDomainArray1().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getDomainArray1()).forEach((i1)->{
+			TestEmbed embed = (TestEmbed)i1;
+			testGenerateTestEmbed(embed, generator);
+		});
+		
+		assertThat(instance.getDomainArray2().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getDomainArray2()).forEach(i1 -> {
+			TestEmbed[] i2 = (TestEmbed[])i1;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach(i3 -> {
+				TestEmbed embed = (TestEmbed)i3;
+				testGenerateTestEmbed(embed, generator);
+			});
+		});
+		
+		assertThat(instance.getNestDomainArray1().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getNestDomainArray1()).forEach(i1 -> {
+			TestEntity entity = (TestEntity)i1;
+			testGenerateTestEntity(entity, generator);
+		});
+		
+		assertThat(instance.getNestDomainArray2().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getNestDomainArray2()).forEach(i1 -> {
+			TestEntity[] i2 = (TestEntity[])i1;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach(i3 -> {
+				TestEntity entity = (TestEntity)i3;
+				testGenerateTestEntity(entity, generator);
 			});
 		});
 	}

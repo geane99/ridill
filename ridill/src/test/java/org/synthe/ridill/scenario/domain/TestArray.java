@@ -9,6 +9,7 @@ public class TestArray {
 	private Integer[][] integerArray2;
 	private List<String>[] listStringArray1;
 	private List<Integer>[][] listIntegerArray2;
+	private List<TestEmbed>[] listDomainArray1;
 	private TestEmbed[] domainArray1;
 	private TestEmbed[][] domainArray2;
 	private TestEntity[] nestDomainArray1;
@@ -73,5 +74,10 @@ public class TestArray {
 	public void setNestDomainArray2(TestEntity[][] nestDomainArray2) {
 		this.nestDomainArray2 = nestDomainArray2;
 	}
-	
+	public List<TestEmbed>[] getListDomainArray1() {
+		return listDomainArray1;
+	}
+	public void setListDomainArray1(List<TestEmbed>[] listDomainArray1) {
+		this.listDomainArray1 = listDomainArray1;
+	}
 }
