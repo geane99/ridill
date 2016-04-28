@@ -36,7 +36,7 @@ public class ClassInfo {
 	 * @return the interfaces implemented
 	 */
 	public Class<?>[] interfaces(){
-		return _template.template().getInterfaces();
+		return _template.interfaces();
 	}
 	/**
 	 * Return type information for target 
@@ -77,6 +77,16 @@ public class ClassInfo {
 	 */
 	public Object newInstance() throws IllegalAccessException, InstantiationException, InvocationTargetException{
 		return _template.newInstance();
+	}
+	/**
+	 * create new array instance.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param length size of array
+	 * @return new instance
+	 */
+	public Object[] componentNewInstance(Integer...length){
+		return _template.componentNewInstance(length);
 	}
 	/**
 	 * set the value for property.
@@ -138,5 +148,14 @@ public class ClassInfo {
 		Template t = _template.typeParameterAt(idx);
 		ClassInfo typeInfo = t.toClassInfo();
 		return typeInfo;
+	}
+	/**
+	 * Get dimensions of array
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return dimensions of array
+	 */
+	public Integer dimensions(){
+		return _template.dimensions();
 	}
 }

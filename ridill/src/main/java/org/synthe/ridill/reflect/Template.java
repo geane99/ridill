@@ -1,11 +1,13 @@
 package org.synthe.ridill.reflect;
 
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,12 @@ abstract class Template{
 	 * @version 1.0.0
 	 */
 	protected Template _enclosing;
+	/**
+	 * dimensions of array
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	protected Integer _dimensions;
 	/**
 	 * set In generics definition and parameterized type are paired<br/>
 	 * <pre>
@@ -175,6 +183,24 @@ abstract class Template{
 		return _classType;
 	}
 	/**
+	 * Set dimensions of array
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param dimensions dimensions of array
+	 */
+	public void dimensions(Integer dimensions){
+		_dimensions = dimensions;
+	}
+	/**
+	 * Get dimensions of array
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return dimensions of array
+	 */
+	public Integer dimensions(){
+		return _dimensions;
+	}
+	/**
 	 * return new instance
 	 * @since 2015/01/18
 	 * @version 1.0.0
@@ -185,6 +211,21 @@ abstract class Template{
 	 */
 	public Object newInstance() throws IllegalAccessException, InstantiationException, InvocationTargetException{
 		return _newInstance(this, enclosing());
+	}
+	/**
+	 * return new array instance
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param s size of array
+	 * @return new instance
+	 */
+	public Object[] componentNewInstance(Integer...s){
+		Class<?> arrayClass = typeParameterAt(0).template();
+		int[] l = new int[s.length];
+		for(int i = 0; i < s.length; i++)
+			l[i] = s[i];
+		
+		return (Object[])Array.newInstance(arrayClass, l);
 	}
 	
 	/**
@@ -219,6 +260,9 @@ abstract class Template{
 			}
 		}
 		
+		if(isEnum())
+			return Arrays.asList(_template.getEnumConstants());
+		
 		constructor = constructor == null ? getNoArgConsructor(target) : constructor;
 		//TODO impl?
 		if(constructor == null)
@@ -232,6 +276,13 @@ abstract class Template{
 		
 	}
 	
+	/**
+	 * find no argument constructor
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param target target
+	 * @return no argument constructor
+	 */
 	private Constructor<?> getNoArgConsructor(Template target){
 		Constructor<?>[] constructors = target.template().getDeclaredConstructors();
 		if(constructors == null)
@@ -240,6 +291,18 @@ abstract class Template{
 			if(each.getParameterCount() == 0)
 				return each;
 		return null;
+	}
+	
+	/**
+	 * Get interfaces that the {@link Class} impmenets.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return interfaces
+	 */
+	public Class<?>[] interfaces(){
+		if(isAnnotation() || isInterface())
+			return new Class<?>[]{_template};
+		return _template.getInterfaces();
 	}
 	
 	/**
@@ -317,6 +380,19 @@ abstract class Template{
 	 */
 	public Boolean hasTypeParameters(){
 		return _typeParameters != null && _typeParameters.size() > 0;
+	}
+	/**
+	 * return type parameters has type variable
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when type parameters has type variable, return true.
+	 */
+	public Boolean hasTypeVariableParameter(){
+		if(_typeParameters != null)
+			for(Template t : _typeParameters)
+				if(t.classType() == ClassType.typeVariable)
+					return true;
+		return false;
 	}
 	/**
 	 * remove all type parameters

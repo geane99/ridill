@@ -12,7 +12,6 @@ import java.util.Queue;
 import java.util.Set;
 
 public class ReflectService {
-	
 	private Map<ClassType, InternalAdapterStrategy> _factoryCache;
 	private _Cache _rcache;
 	private ClassLoader _loader;
@@ -45,11 +44,13 @@ public class ReflectService {
 		_factoryCache.put(ClassType.annotationType, proxyFactory);
 		_factoryCache.put(ClassType.abstractType, new _AbstractStrategy());
 		_factoryCache.put(ClassType.listType, new _ListStrategy());
+		_factoryCache.put(ClassType.collectionType, new _ListStrategy());
 		_factoryCache.put(ClassType.setType,  new _SetStrategy());
 		_factoryCache.put(ClassType.queueType, new _QueueStrategy());
 		_factoryCache.put(ClassType.mapType, new _DictionaryStrategy());
 		_factoryCache.put(ClassType.arrayType, new _ArrayStrategy());
 		_factoryCache.put(ClassType.domainType, new _DomainStrategy());
+		_factoryCache.put(ClassType.typeVariable, new _ObjectStrategy());
 		_rcache = new _Cache();
 	}
 	
@@ -108,6 +109,8 @@ public class ReflectService {
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			try{
 				Object target = info.newInstance();
+				if(target == null)
+					return target;
 				for(ClassInfo each : info.properties()){
 					if(each.isImmutable())
 						continue;
@@ -136,22 +139,29 @@ public class ReflectService {
 	class _ArrayStrategy implements InternalAdapterStrategy{
 		@Override
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
-			try{
-				Object[] arrays = (Object[])info.newInstance();
-				for(int i = 0; i < arrays.length; i++)
-					//TODO impl
-					arrays[i] = _reflect(info, adapter, enclosingInstance, depth + 1);
-				return arrays;
-			}
-			catch(IllegalAccessException e){
+			Integer[] size = new Integer[info.dimensions()];
+			for(int i = 0; i < size.length; i++)
+				size[i] = adapter.getCollectionSize(info, enclosingInstance, depth+i);
+			
+			Object[] arrays = info.componentNewInstance(size);
+			
+			ClassInfo typeParam = info.typeParameterAt(0);
+			return processArray(arrays, typeParam, adapter, depth);
+		}
+		
+		private Object processArray(Object[] array, ClassInfo typeParam, ReflectAdapter adapter, Integer depth){
+			if(array == null)
 				return null;
+			
+			for(int i = 0; i < array.length; i++){
+				array[i] = isArray(array[i]) ?
+					processArray((Object[])array[i], typeParam, adapter, depth + 1) :
+					_reflect(typeParam, adapter, array, depth + 1);
 			}
-			catch(InstantiationException e){
-				return null;
-			}
-			catch(InvocationTargetException e){
-				return null;
-			}
+			return array;
+		}
+		private Boolean isArray(Object target){
+			return target instanceof Object[];
 		}
 	}
 	
@@ -224,7 +234,9 @@ public class ReflectService {
 		@Override
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			Map<Object,Object> collection = (Map<Object,Object>)adapter.getMap(info, enclosingInstance, depth);
-
+			if(collection == null)
+				return null;
+			
 			int size = adapter.getCollectionSize(info,enclosingInstance,depth);
 			
 			ClassInfo typeKeyParamInfo = info.typeParameterAt(0);
@@ -266,12 +278,14 @@ public class ReflectService {
 		@Override
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			Collection<Object> collection = (Collection<Object>)instance(info, enclosingInstance, adapter, depth);
+			if(collection == null)
+				return null;
 			
 			int size = adapter.getCollectionSize(info,enclosingInstance, depth);
 			
 			ClassInfo typeParamInfo = info.typeParameterAt(0);
 			for(int idx = 0; idx < size; idx++)
-				collection.add(_reflect(typeParamInfo, adapter, adapter, depth+1));
+				collection.add(_reflect(typeParamInfo, adapter, collection, depth+1));
 			
 			return collection;
 		}

@@ -16,47 +16,40 @@ class StubProxy implements InvocationHandler{
 	/**
 	 * {@link ClassLoader}
 	 * @since 2015/01/18
-	 * @author masahiko.ootsuki
 	 * @version 1.0.0
 	 */
 	private ClassLoader _loader;
+	
 	/**
-	 * see {@link ValueGenerator}
+	 * see {@link ReflectService}
 	 * @since 2015/01/18
-	 * @author masahiko.ootsuki
 	 * @version 1.0.0
 	 */
-	private ValueGenerator _generator;
-	/**
-	 * see {@link ExtValueGenerator}
-	 * @since 2015/01/18
-	 * @author masahiko.ootsuki
-	 * @version 1.0.0
-	 */
-	private ExtValueGenerator _extGenerator;
+	private ReflectService _service;
+	
 	/**
 	 * constructor to receive the {@link ValueGenerator} argument.
 	 * @since 2015/01/18
-	 * @author masahiko.ootsuki
 	 * @version 1.0.0
 	 * @param loader {@link ClassLoader}
 	 * @param generator {@link ValueGenerator}
 	 */
 	public StubProxy(ClassLoader loader, ValueGenerator generator){
 		_loader = loader;
-		_generator = generator;
+		InternalGenerator _g = new InternalGenerator(generator);
+		_service = new ReflectService(_loader, _g);
 	}
 	/**
 	 * constructor to receive the {@link ExtValueGenerator} argument.
 	 * @since 2015/01/18
-	 * @author masahiko.ootsuki
 	 * @version 1.0.0
 	 * @param loader {@link ClassLoader}
 	 * @param generator {@link ExtValueGenerator}
 	 */
 	public StubProxy(ClassLoader loader, ExtValueGenerator generator){
 		_loader = loader;
-		_extGenerator = generator;
+		InternalGenerator _g = new InternalGenerator(generator);
+		_service = new ReflectService(_loader, _g);
 	}
 	/*
 	 * (non-Javadoc)
@@ -64,9 +57,6 @@ class StubProxy implements InvocationHandler{
 	 */
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		InternalGenerator generator = _extGenerator != null ? 
-			new InternalGenerator(_extGenerator):
-			new InternalGenerator(_generator);
-		return new ReflectService(_loader, generator).reflect(proxy, method, args);
+		return _service.reflect(proxy, method, args);
 	}
 }

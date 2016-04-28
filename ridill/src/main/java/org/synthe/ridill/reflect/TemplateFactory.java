@@ -1,6 +1,7 @@
 package org.synthe.ridill.reflect;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -36,7 +37,7 @@ class TemplateFactory {
 			instance.getClass() : 
 			method.getDeclaringClass();
 
-		Template enclosingTemplate = createByClassType(enclosing);
+		Template enclosingTemplate = createByClassType(enclosing, null);
 		
 		//return type is type parameter of class
 		if(typeParameter != null && typeParameter instanceof TypeVariable<?>){
@@ -57,7 +58,7 @@ class TemplateFactory {
 			}
 		}
 		else{
-			ClassTemplate real = (ClassTemplate)createByClassType(returnType);
+			ClassTemplate real = (ClassTemplate)createByClassType(returnType, enclosingTemplate);
 			MethodTemplate template = new MethodTemplate(method, real);
 			return template;
 		}
@@ -70,22 +71,34 @@ class TemplateFactory {
 	 * @param clazz target 
 	 * @return {@link Template}
 	 */
-	public ClassTemplate createByClassType(Class<?> clazz){
+	public ClassTemplate createByClassType(Class<?> clazz, Template enclosing){
 		ClassTemplate template = new ClassTemplate(clazz);
 		if(template.isLocalClass()){
-			Class<?> enclosingClass = clazz.getEnclosingClass();
-			Template nestEnclosing = createByClassType(enclosingClass);
-			template.enclosing(nestEnclosing);
+			if(enclosing != null)
+				template.enclosing(enclosing);
+			else{
+				Class<?> enclosingClass = clazz.getEnclosingClass();
+				Template nestEnclosing = createByClassType(enclosingClass, null);
+				template.enclosing(nestEnclosing);
+			}
 		}
 		if(template.isMemberClass()){
-			Class<?> enclosingClass = clazz.getDeclaringClass();
-			Template nestEnclosing = createByClassType(enclosingClass);
-			template.enclosing(nestEnclosing);
+			if(enclosing != null)
+				template.enclosing(enclosing);
+			else{
+				Class<?> enclosingClass = clazz.getDeclaringClass();
+				Template nestEnclosing = createByClassType(enclosingClass, null);
+				template.enclosing(nestEnclosing);
+			}
 		}
 		if(template.isAnonymousClass()){
-			Class<?> enclosingClass = clazz.getEnclosingClass();
-			Template nestEnclosing = createByClassType(enclosingClass);
-			template.enclosing(nestEnclosing);
+			if(enclosing != null)
+				template.enclosing(enclosing);
+			else{
+				Class<?> enclosingClass = clazz.getEnclosingClass();
+				Template nestEnclosing = createByClassType(enclosingClass, null);
+				template.enclosing(nestEnclosing);
+			}
 		}		
 		
 		TypeVariable<?>[] parameters = clazz.getTypeParameters();
@@ -130,43 +143,75 @@ class TemplateFactory {
 					Class<?> fieldClass = each.getType();
 					if(!each.getDeclaringClass().equals(now))
 						continue;
-
-					ClassTemplate fieldClassType = createByClassType(fieldClass);
+					
+					ClassTemplate fieldClassType = !enclosing.isEnum() ?
+						createByClassType(fieldClass, enclosing) : 
+						(ClassTemplate)enclosing
+					;
 					FieldTemplate fieldTemplate = new FieldTemplate(each, fieldClassType);
 					fieldTemplate.enclosing(enclosing);
 					
-					TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
-					if(fieldClassTypeVariables != null){
-						for(TypeVariable<?> fieldTypeVariable : fieldClassTypeVariables){
-							Template fieldTypeVariableTemplate = createByTypeVariable(
-								fieldTemplate, 
-								fieldTypeVariable, 
+					if(fieldTemplate.isArray()){
+						Class<?> componentType = fieldClass.getComponentType();
+						Integer dimensions = 1;
+						while(componentType.isArray()){
+							componentType = componentType.getComponentType();
+							dimensions++;
+						}
+						
+						Template typeParameter = createByBaseType(
+							componentType,
+							fieldTemplate,
+							TemplateType.propertyTypeParameters
+						);
+						fieldTemplate.dimensions(dimensions);
+						
+						if(typeParameter.hasTypeParameters() && typeParameter.hasTypeVariableParameter()){
+							Type type = each.getGenericType();
+							Template typeTemplaterGenericParameter = createByBaseType(
+								type, 
+								typeParameter, 
 								TemplateType.propertyTypeParameters
 							);
-							fieldTemplate.addTypeParameter(fieldTypeVariableTemplate);
+							typeParameter.real(typeTemplaterGenericParameter);
 						}
+						fieldTemplate.addTypeParameter(typeParameter);
+						templates.add(fieldTemplate);
 					}
-					
-					Type type = each.getGenericType();
-					Template typeTemplate = createByBaseType(
-						type, 
-						fieldTemplate, 
-						TemplateType.propertyTypeParameters
-					);
-					
-					if(typeTemplate instanceof TypeParameterTemplate){
-						TypeParameterTemplate parameterTemplate = (TypeParameterTemplate)typeTemplate;
-						if(parameterTemplate.isTypeVariableParameter()){
-							Template real = classTypeParameters.get(parameterTemplate.templateName());
-							if(real != null){
-								parameterTemplate.real(real);
-								fieldTemplate.real(parameterTemplate);
+					else{
+						TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
+						if(fieldClassTypeVariables != null){
+							for(TypeVariable<?> fieldTypeVariable : fieldClassTypeVariables){
+								Template fieldTypeVariableTemplate = createByTypeVariable(
+									fieldTemplate, 
+									fieldTypeVariable, 
+									TemplateType.propertyTypeParameters
+								);
+								fieldTemplate.addTypeParameter(fieldTypeVariableTemplate);
 							}
 						}
+						
+						Type type = each.getGenericType();
+						Template typeTemplater = createByBaseType(
+							type, 
+							fieldTemplate, 
+							TemplateType.propertyTypeParameters
+						);
+						if(typeTemplater instanceof TypeParameterTemplate){
+							TypeParameterTemplate parameterTemplate = (TypeParameterTemplate)typeTemplater;
+							if(parameterTemplate.isTypeVariableParameter()){
+								Template real = classTypeParameters.get(parameterTemplate.templateName());
+								if(real != null){
+									parameterTemplate.real(real);
+									fieldTemplate.real(parameterTemplate);
+								}
+							}
+						}
+						else if(typeTemplater instanceof ClassTemplate)
+							fieldTemplate.real(typeTemplater);
+						templates.add(fieldTemplate);
 					}
-					else if(typeTemplate instanceof ClassTemplate)
-						fieldTemplate.real(typeTemplate);
-					templates.add(fieldTemplate);
+					//end for
 				}
 			}
 			before = now;
@@ -238,7 +283,24 @@ class TemplateFactory {
 				template.addTypeParameter(param);
 			}
 		}
+		if(!template.isEmbedClass() && !template.isEnum()){
+			List<Template> fields = createFieldTypeAll(template);
+			template.properties(fields);
+		}
 		return template;
+	}
+	
+	/**
+	 * Geneate the {@link Template} from the generic array type parameter.
+	 * @since 2015/01/18
+ 	 * @version 1.0.0
+	 * @param enclosing {@link Class} that enclosing the type parameter
+	 * @param type type parameter
+	 * @param templateType what type parameterization
+	 * @return {@link Template}
+	 */
+	public Template createByGenericArrayType(Template enclosing, GenericArrayType type, TemplateType templateType){
+		return createByBaseType(type.getGenericComponentType(), enclosing, templateType);
 	}
 	
 	/**
@@ -271,7 +333,12 @@ class TemplateFactory {
 				(TypeVariable<?>)type, 
 				TemplateType.propertyTypeParameters
 			);
-
+		else if(type instanceof GenericArrayType)
+			return createByGenericArrayType(
+				enclosing,
+				(GenericArrayType)type,
+				templateType
+			);
 		return null;
 	}	
 	
@@ -296,7 +363,7 @@ class TemplateFactory {
 					int index = 0;
 					
 					for(TypeVariable<?> each : superGenericsTypeDifinition){
-						Template superClassDifinition = createByClassType(now);
+						Template superClassDifinition = createByClassType(now, null);
 
 						Template superClassTypeParameterDifinisionTemplate = createByBaseType(
 							each, 
