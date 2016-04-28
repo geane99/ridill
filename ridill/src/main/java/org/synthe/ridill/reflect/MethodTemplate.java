@@ -3,7 +3,7 @@ package org.synthe.ridill.reflect;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.synthe.ridill.generator.TargetInfo;
+import org.synthe.ridill.stub.TargetInfo;
 
 /**
  * Class that provides type information.<br/>
@@ -23,12 +23,29 @@ class MethodTemplate extends PropertyTemplate{
 	 * constructor
 	 * @since 2015/01/18
 	 * @version 1.0.0
-	 * @param field {@link Method}
+	 * @param method {@link Method}
+	 * @param returnTemplate {@link ClassTemplate}
 	 */
-	public MethodTemplate(Method method){
+	public MethodTemplate(Method method, ClassTemplate returnTemplate){
+		super(returnTemplate.template());
+		_method = method;
+		setAccessControl(_method);
+		override(returnTemplate);
+	}
+	
+	/**
+	 * constructor 
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param method {@link Method}
+	 * @param returnTemplate {@link TypeParameterTemplate}
+	 */
+	public MethodTemplate(Method method, TypeParameterTemplate returnTemplate){
+		super(returnTemplate.template());
 		_method = method;
 		setAccessControl(_method);
 	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.synthe.ridill.reflect.PropertyTemplate#propertyName()
@@ -120,7 +137,7 @@ class MethodTemplate extends PropertyTemplate{
 		 * @see org.synthe.ridill.TargetInfo#eclosingClassName()
 		 */
 		@Override
-		public String eclosingClassName() {
+		public String enclosingClassName() {
 			return _info.enclosing().templateName();
 		}
 		/*

@@ -2,7 +2,7 @@ package org.synthe.ridill.reflect;
 
 import java.lang.reflect.TypeVariable;
 
-import org.synthe.ridill.generator.TargetInfo;
+import org.synthe.ridill.stub.TargetInfo;
 
 /**
  * Class that provides type information.<br/>
