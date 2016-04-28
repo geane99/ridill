@@ -387,5 +387,18 @@ public class ScenarioStubFactoryTest {
 				testGenerateTestEntity(entity, generator);
 			});
 		});
+		
+		assertThat(instance.getComplexList().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getComplexList()).forEach(i1 -> {
+			List<String[]> i2 = (List<String[]>)i1;
+			assertThat(i2.size(), is(equalTo(generator.getCollectionSize(null))));
+			i2.forEach(i3 -> {
+				String[] i4 = (String[])i3;
+				toList(i4).forEach(i5 -> {
+					assertThat((String)i5, is(equalTo(generator.getString(null))));
+				});
+			});
+		});
+
 	}
 }

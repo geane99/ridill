@@ -184,6 +184,12 @@ public enum ClassType {
             return ClassType.characterType;
 
         Class<?>[] interfaces = clazz.getInterfaces();
+        if(clazz.isAnnotation())
+            return ClassType.annotationType;
+        if(clazz.isEnum())
+            return ClassType.enumType;
+        if(clazz.isArray())
+            return ClassType.arrayType;
         if(clazz.equals(List.class) || contain(interfaces,List.class))
             return ClassType.listType;
         if(clazz.equals(Map.class) || contain(interfaces,Map.class))
@@ -194,14 +200,8 @@ public enum ClassType {
             return ClassType.queueType;
         if(clazz.equals(Collection.class) || contain(interfaces,Collection.class))
             return ClassType.collectionType;
-        if(clazz.isAnnotation())
-            return ClassType.annotationType;
         if(clazz.isInterface())
             return ClassType.interfaceType;
-        if(clazz.isEnum())
-            return ClassType.enumType;
-        if(clazz.isArray())
-            return ClassType.arrayType;
         if(Modifier.isAbstract(clazz.getModifiers()))
             return ClassType.abstractType;
         return ClassType.domainType;
