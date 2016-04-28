@@ -195,31 +195,6 @@ class TemplateFactory {
 						);
 						fieldTemplate.dimensions(typeParameter.dimensions());
 						
-						/*
-						Class<?> componentType = fieldClass.getComponentType();
-						Integer dimensions = 1;
-						while(componentType.isArray()){
-							componentType = componentType.getComponentType();
-							dimensions++;
-						}
-						
-						Template typeParameter = createByBaseType(
-							componentType,
-							fieldTemplate,
-							TemplateType.propertyTypeParameters
-						);
-						fieldTemplate.dimensions(dimensions);
-						
-						if(typeParameter.hasTypeParameters() && typeParameter.hasTypeVariableParameter()){
-							Type type = each.getGenericType();
-							Template typeTemplaterGenericParameter = createByBaseType(
-								type, 
-								typeParameter, 
-								TemplateType.propertyTypeParameters
-							);
-							typeParameter.real(typeTemplaterGenericParameter);
-						}
-						*/
 						fieldTemplate.addTypeParameter(typeParameter);
 						templates.add(fieldTemplate);
 					}
@@ -237,23 +212,25 @@ class TemplateFactory {
 						}
 						
 						Type type = each.getGenericType();
-						Template typeTemplater = createByBaseType(
+						Template typeTemplate = createByBaseType(
 							type, 
 							fieldTemplate, 
 							TemplateType.propertyTypeParameters
 						);
-						if(typeTemplater instanceof TypeParameterTemplate){
-							TypeParameterTemplate parameterTemplate = (TypeParameterTemplate)typeTemplater;
+						if(typeTemplate instanceof TypeParameterTemplate){
+							TypeParameterTemplate parameterTemplate = (TypeParameterTemplate)typeTemplate;
 							if(parameterTemplate.isTypeVariableParameter()){
 								Template real = classTypeParameters.get(parameterTemplate.templateName());
 								if(real != null){
 									parameterTemplate.real(real);
 									fieldTemplate.real(parameterTemplate);
 								}
+								else if(fieldClass.equals(Object.class))
+									fieldTemplate.real(typeTemplate);
 							}
 						}
-						else if(typeTemplater instanceof ClassTemplate)
-							fieldTemplate.real(typeTemplater);
+						else if(typeTemplate instanceof ClassTemplate)
+							fieldTemplate.real(typeTemplate);
 						templates.add(fieldTemplate);
 					}
 					//end for
