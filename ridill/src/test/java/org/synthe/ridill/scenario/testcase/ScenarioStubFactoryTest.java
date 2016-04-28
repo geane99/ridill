@@ -444,6 +444,7 @@ public class ScenarioStubFactoryTest {
 		});
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testArray(){
 		ValueGeneratorForTesting generator = new ValueGeneratorForTesting();
@@ -455,6 +456,38 @@ public class ScenarioStubFactoryTest {
 		assertThat(instance.getIntegerArray1().length, is(equalTo(generator.getCollectionSize(null))));
 		toList(instance.getIntegerArray1()).forEach((i)->{
 			assertThat((Integer)i, is(equalTo(generator.getInteger(null))));
+		});
+		
+		assertThat(instance.getIntegerArray2().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getIntegerArray2()).forEach((i)->{
+			Integer[] i2 = (Integer[])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((i3)->{
+				assertThat((Integer)i3, is(equalTo(generator.getInteger(null))));
+			});
+		});
+		
+		assertThat(instance.getStringArray1().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getStringArray1()).forEach((i)->{
+			assertThat((String)i, is(equalTo(generator.getString(null))));
+		});
+		
+		assertThat(instance.getStringArray2().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getStringArray2()).forEach((i)->{
+			String[] i2 = (String[])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((i3)->{
+				assertThat((String)i3, is(equalTo(generator.getString(null))));
+			});
+		});
+		
+		assertThat(instance.getListStringArray1().length, is(equalTo(generator.getCollectionSize(null))));
+		toList(instance.getListStringArray1()).forEach((i)->{
+			List<String> i2 = (List<String>)i;
+			assertThat(i2.size(), is(equalTo(generator.getCollectionSize(null))));
+			i2.forEach((i3)->{
+				assertThat((String)i3, is(equalTo(generator.getString(null))));
+			});
 		});
 	}
 }

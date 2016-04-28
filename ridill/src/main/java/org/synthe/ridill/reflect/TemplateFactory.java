@@ -1,6 +1,7 @@
 package org.synthe.ridill.reflect;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -164,6 +165,16 @@ class TemplateFactory {
 							TemplateType.propertyTypeParameters
 						);
 						fieldTemplate.dimensions(dimensions);
+						
+						if(typeParameter.hasTypeParameters() && typeParameter.hasTypeVariableParameter()){
+							Type type = each.getGenericType();
+							Template typeTemplaterGenericParameter = createByBaseType(
+								type, 
+								typeParameter, 
+								TemplateType.propertyTypeParameters
+							);
+							typeParameter.real(typeTemplaterGenericParameter);
+						}
 						fieldTemplate.addTypeParameter(typeParameter);
 						templates.add(fieldTemplate);
 					}
@@ -280,6 +291,19 @@ class TemplateFactory {
 	}
 	
 	/**
+	 * Geneate the {@link Template} from the generic array type parameter.
+	 * @since 2015/01/18
+ 	 * @version 1.0.0
+	 * @param enclosing {@link Class} that enclosing the type parameter
+	 * @param type type parameter
+	 * @param templateType what type parameterization
+	 * @return {@link Template}
+	 */
+	public Template createByGenericArrayType(Template enclosing, GenericArrayType type, TemplateType templateType){
+		return createByBaseType(type.getGenericComponentType(), enclosing, templateType);
+	}
+	
+	/**
 	 * Generate the {@link Template} from the {@link Type}
 	 * @since 2015/01/18
  	 * @version 1.0.0
@@ -309,7 +333,12 @@ class TemplateFactory {
 				(TypeVariable<?>)type, 
 				TemplateType.propertyTypeParameters
 			);
-
+		else if(type instanceof GenericArrayType)
+			return createByGenericArrayType(
+				enclosing,
+				(GenericArrayType)type,
+				templateType
+			);
 		return null;
 	}	
 	

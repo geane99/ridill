@@ -109,6 +109,8 @@ public class ReflectService {
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			try{
 				Object target = info.newInstance();
+				if(target == null)
+					return target;
 				for(ClassInfo each : info.properties()){
 					if(each.isImmutable())
 						continue;
@@ -148,6 +150,9 @@ public class ReflectService {
 		}
 		
 		private Object processArray(Object[] array, ClassInfo typeParam, ReflectAdapter adapter, Integer depth){
+			if(array == null)
+				return null;
+			
 			for(int i = 0; i < array.length; i++){
 				array[i] = isArray(array[i]) ?
 					processArray((Object[])array[i], typeParam, adapter, depth + 1) :
@@ -229,7 +234,9 @@ public class ReflectService {
 		@Override
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			Map<Object,Object> collection = (Map<Object,Object>)adapter.getMap(info, enclosingInstance, depth);
-
+			if(collection == null)
+				return null;
+			
 			int size = adapter.getCollectionSize(info,enclosingInstance,depth);
 			
 			ClassInfo typeKeyParamInfo = info.typeParameterAt(0);
@@ -271,6 +278,8 @@ public class ReflectService {
 		@Override
 		public Object command(ClassInfo info, ReflectAdapter adapter, Object enclosingInstance, Integer depth) {
 			Collection<Object> collection = (Collection<Object>)instance(info, enclosingInstance, adapter, depth);
+			if(collection == null)
+				return null;
 			
 			int size = adapter.getCollectionSize(info,enclosingInstance, depth);
 			

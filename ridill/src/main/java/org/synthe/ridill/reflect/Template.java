@@ -382,6 +382,19 @@ abstract class Template{
 		return _typeParameters != null && _typeParameters.size() > 0;
 	}
 	/**
+	 * return type parameters has type variable
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when type parameters has type variable, return true.
+	 */
+	public Boolean hasTypeVariableParameter(){
+		if(_typeParameters != null)
+			for(Template t : _typeParameters)
+				if(t.classType() == ClassType.typeVariable)
+					return true;
+		return false;
+	}
+	/**
 	 * remove all type parameters
 	 * @since 2015/01/18
 	 * @version 1.0.0
