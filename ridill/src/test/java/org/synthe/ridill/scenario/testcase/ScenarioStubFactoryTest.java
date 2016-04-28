@@ -8,9 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.synthe.ridill.generator.StubFactory;
-import org.synthe.ridill.generator.TargetInfo;
-import org.synthe.ridill.generator.ValueGenerator;
+import org.synthe.ridill.generate.ValueGenerator;
 import org.synthe.ridill.scenario.domain.TestAnnotation;
 import org.synthe.ridill.scenario.domain.TestArray;
 import org.synthe.ridill.scenario.domain.TestCollections;
@@ -20,6 +18,8 @@ import org.synthe.ridill.scenario.domain.TestEnum;
 import org.synthe.ridill.scenario.domain.TestInterface;
 import org.synthe.ridill.scenario.domain.TestLocalClass;
 import org.synthe.ridill.scenario.domain.TestPrimitive;
+import org.synthe.ridill.stub.StubFactory;
+import org.synthe.ridill.stub.TargetInfo;
 
 public class ScenarioStubFactoryTest {
 	class ValueGeneratorForTesting implements ValueGenerator{

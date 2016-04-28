@@ -9,7 +9,7 @@ import static org.junit.Assert.fail;
 import java.lang.reflect.Field;
 
 import org.junit.Test;
-import org.synthe.ridill.generator.TargetInfo;
+import org.synthe.ridill.stub.TargetInfo;
 public class ClassInfoTest {
 	class LocalClass{
 		@Override

@@ -1,13 +1,15 @@
-package org.synthe.ridill.generator;
+package org.synthe.ridill.stub;
 
-import org.synthe.ridill.generator.InternalGenerator.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import java.util.List;
+
 import org.synthe.ridill.reflect.ClassType;
 import org.synthe.ridill.reflect.ClassInfo;
+import org.synthe.ridill.stub.InternalGenerator.*;
 public class InternalGeneratorTest {
 
 	@Test

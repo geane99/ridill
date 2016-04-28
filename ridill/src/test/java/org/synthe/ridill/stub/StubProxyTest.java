@@ -1,13 +1,16 @@
-package org.synthe.ridill.generator;
+package org.synthe.ridill.stub;
 
-import org.synthe.ridill.generator.StubProxy.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+
 import org.synthe.ridill.reflect.ReflectService;
+import org.synthe.ridill.stub.StubProxy;
+import org.synthe.ridill.stub.StubProxy.*;
 public class StubProxyTest {
 
 	@Test

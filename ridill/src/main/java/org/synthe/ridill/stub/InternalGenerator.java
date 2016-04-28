@@ -1,4 +1,4 @@
-package org.synthe.ridill.generator;
+package org.synthe.ridill.stub;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.synthe.ridill.generate.ExtValueGenerator;
+import org.synthe.ridill.generate.ValueGenerator;
 import org.synthe.ridill.reflect.ReflectAdapter;
 import org.synthe.ridill.reflect.ClassType;
 import org.synthe.ridill.reflect.ClassInfo;

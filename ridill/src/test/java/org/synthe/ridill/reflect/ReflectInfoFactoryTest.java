@@ -16,7 +16,7 @@ import org.synthe.ridill.domain.ExtendGenericsClassTest;
 import org.synthe.ridill.domain.SimpleClassTest;
 import org.synthe.ridill.domain.SimpleClassTest.SimpleClassInnerTest;
 import org.synthe.ridill.domain.SimpleInterfaceTest;
-import org.synthe.ridill.generator.StubFactory;
+import org.synthe.ridill.stub.StubFactory;
 
 public class ReflectInfoFactoryTest {
 	@Test

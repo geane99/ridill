@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.synthe.ridill.generator.TargetInfo;
+import org.synthe.ridill.stub.TargetInfo;
 
 
 public class ClassTemplateTest {

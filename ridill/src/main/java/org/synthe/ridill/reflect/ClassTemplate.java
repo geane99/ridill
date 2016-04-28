@@ -3,7 +3,7 @@ package org.synthe.ridill.reflect;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.synthe.ridill.generator.TargetInfo;
+import org.synthe.ridill.stub.TargetInfo;
 
 
 /**

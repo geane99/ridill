@@ -1,8 +1,10 @@
-package org.synthe.ridill.generator;
+package org.synthe.ridill.stub;
 
-import org.synthe.ridill.generator.StubFactory.*;
+import org.synthe.ridill.stub.StubFactory.*;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import java.lang.reflect.Proxy;
