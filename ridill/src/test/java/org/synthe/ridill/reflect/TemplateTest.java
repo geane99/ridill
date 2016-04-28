@@ -1,8 +1,8 @@
-package org.synthe.ridill.stub;
+package org.synthe.ridill.reflect;
 
 import org.junit.Test;
-public class StubProxyTest {
 
+public class TemplateTest {
 	@Test
 	public void test(){
 		//see org.synthe.ridill.scenario.testcase.ScenarioStubFactoryTest
