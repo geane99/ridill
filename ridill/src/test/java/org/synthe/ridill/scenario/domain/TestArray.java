@@ -15,6 +15,7 @@ public class TestArray {
 	private TestEntity[] nestDomainArray1;
 	private TestEntity[][] nestDomainArray2;
 	private List<String[]>[] complexList;
+	private List<String[][]>[][] complexList2;
 	public String[] getStringArray1() {
 		return stringArray1;
 	}
@@ -86,5 +87,11 @@ public class TestArray {
 	}
 	public void setComplexList(List<String[]>[] complexList) {
 		this.complexList = complexList;
+	}
+	public List<String[][]>[][] getComplexList2() {
+		return complexList2;
+	}
+	public void setComplexList2(List<String[][]>[][] complexList2) {
+		this.complexList2 = complexList2;
 	}
 }
