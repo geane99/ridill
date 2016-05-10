@@ -15,7 +15,11 @@ import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestAsync;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestAsyncImpl;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSync;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSyncImpl;
+import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSyncImplNest;
+import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSyncImplNest2;
+import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSyncImplNest2Impl;
 import org.synthe.ridill.scenario.domain.TestInterface;
+import org.synthe.ridill.scenario.domain.TestPrimitive;
 import org.synthe.ridill.stub.StubFactory;
 import org.synthe.ridill.stub.TargetInfo;
 
@@ -101,6 +105,42 @@ public class ScenarioStubFactoryTestGenerics{
 		Double doubleActual = embed.getFieldDouble();
 		Double doubleExpected = generator.getDouble(null);
 		assertThat(doubleActual, is(equalTo(doubleExpected)));
+	}
+	
+	private void testGenerateTestPrimitive(TestPrimitive primitive, ValueGeneratorForGenericsTesting generator){
+		//test simple pojo (property is primitive only)
+		
+		boolean booleanActual2 = primitive.isFieldBoolean();
+		boolean booleanExpected2 = generator.getBoolean(null);
+		assertThat(booleanActual2, is(equalTo(booleanExpected2)));
+		
+		byte byteActual2 = primitive.getFieldByte();
+		byte byteExpected2 = generator.getByte(null);
+		assertThat(byteActual2, is(equalTo(byteExpected2)));
+		
+		char charActual2 = primitive.getFieldCharacter();
+		char charExpected2 = generator.getCharacter(null);
+		assertThat(charActual2, is(equalTo(charExpected2)));
+		
+		short shortActual2 = primitive.getFieldShort();
+		short shortExpected2 = generator.getShort(null);
+		assertThat(shortActual2, is(equalTo(shortExpected2)));
+		
+		int intActual2 = primitive.getFieldInteger();
+		int intExpected2 = generator.getInteger(null);
+		assertThat(intActual2, is(equalTo(intExpected2)));
+
+		long longActual2 = primitive.getFieldLong();
+		long longExpected2 = generator.getLong(null);
+		assertThat(longActual2, is(equalTo(longExpected2)));
+
+		float floatActual2 = primitive.getFieldFloat();
+		float floatExpected2 = generator.getFloat(null);
+		assertThat(floatActual2, is(equalTo(floatExpected2)));
+		
+		double doubleActual2 = primitive.getFieldDouble();
+		double doubleExpected2 = generator.getDouble(null);
+		assertThat(doubleActual2, is(equalTo(doubleExpected2)));
 	}	
 	
 	@Test
@@ -197,4 +237,49 @@ public class ScenarioStubFactoryTestGenerics{
 		testGenerateTestEmbed(instance.getFieldTypeVariable(), generator);
 		testGenerateTestEmbed(instance.getParentFieldTypeVariable(), generator);
 	}
+	
+	@Test
+	public void testGenericsTypeVariableNestSyncImplNest(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestGenericsTypeVariableNestSyncImplNest<TestEmbed> instance = test.returnTestGenericsTypeVariableNestSyncImplNest();
+		
+		assertThat(instance.getFieldDouble(), is(equalTo(generator.getDouble(null))));
+		assertThat(instance.getString(), is(equalTo(generator.getString(null))));
+		testGenerateTestEmbed(instance.getFieldTypeVariable(), generator);
+		testGenerateTestEmbed(instance.getParentFieldTypeVariable(), generator);
+		assertThat(instance.getNestTypeParameter1(), is(equalTo(null)));
+	}
+	
+	@Test
+	public void testGenericsTypeVariableNestSyncImplNest2(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestGenericsTypeVariableNestSyncImplNest2<TestEmbed> instance = test.returnTestGenericsTypeVariableNestSyncImplNest2();
+		
+		assertThat(instance.getFieldDouble(), is(equalTo(generator.getDouble(null))));
+		assertThat(instance.getString(), is(equalTo(generator.getString(null))));
+		testGenerateTestEmbed(instance.getFieldTypeVariable(), generator);
+		testGenerateTestEmbed(instance.getParentFieldTypeVariable(), generator);
+		assertThat(instance.getNestTypeParameter1(), is(equalTo(null)));
+		assertThat(instance.getNestTypeParameter2(), is(equalTo(null)));
+	}
+	
+	@Test
+	public void testGenericsTypeVariableNestSyncImplNest2Impl(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestGenericsTypeVariableNestSyncImplNest2Impl instance = test.returnTestGenericsTypeVariableNestSyncImplNest2Impl();
+		
+		assertThat(instance.getFieldDouble(), is(equalTo(generator.getDouble(null))));
+		assertThat(instance.getString(), is(equalTo(generator.getString(null))));
+		testGenerateTestEmbed(instance.getFieldTypeVariable(), generator);
+		testGenerateTestEmbed(instance.getParentFieldTypeVariable(), generator);
+		testGenerateTestPrimitive(instance.getNestTypeParameter1(), generator);
+		testGenerateTestPrimitive(instance.getNestTypeParameter2(), generator);
+	}
+
 }

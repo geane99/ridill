@@ -17,6 +17,9 @@ public interface TestInterface {
 	public TestGenericsTypeVariableNestAsyncImpl returnTestGenericsTypeVariableNestAsyncImpl();
 	public <T> TestGenericsTypeVariableNestSync<T> returnTestGenericsTypeVariableNestSync();
 	public TestGenericsTypeVariableNestSyncImpl returnTestGenericsTypeVariableNestSyncImpl();
+	public <T> TestGenericsTypeVariableNestSyncImplNest<T> returnTestGenericsTypeVariableNestSyncImplNest();
+	public <T> TestGenericsTypeVariableNestSyncImplNest2<T> returnTestGenericsTypeVariableNestSyncImplNest2();
+	public TestGenericsTypeVariableNestSyncImplNest2Impl returnTestGenericsTypeVariableNestSyncImplNest2Impl();
 	public <K,V> TestGenericsTypeVariableUsePropertyTypeParameter<K,V> returnTestGenericsTypeVariableUsePropertyTypeParameter();
 	public TestGenericsTypeVariableUsePropertyTypeParameterImpl returnTestGenericsTypeVariableUsePropertyTypeParameterImpl();
 	public <K,V> TestGenericsTypeVariableUsePropertyTypeParameterNest<K,V> returnTestGenericsTypeVariableUsePropertyTypeParameterNest();
