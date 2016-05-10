@@ -135,11 +135,32 @@ class TemplateFactory {
 			dimensions++;
 		}
 
-		Template typeParameter = createByBaseType(
-			componentType, 
-			enclosing,
-			TemplateType.propertyTypeParameters
-		);
+		Boolean isTypeVariable = false;
+		TypeVariable<?> foundTypeVariable = null;
+		if(componentType.equals(Object.class) && genericType instanceof GenericArrayType){
+			GenericArrayType gType = (GenericArrayType)genericType;
+			while(gType != null && gType instanceof GenericArrayType){
+				if(gType.getGenericComponentType() instanceof TypeVariable<?>){
+					isTypeVariable = true;
+					foundTypeVariable = (TypeVariable<?>)gType.getGenericComponentType();
+					break;
+				}
+				if(gType.getGenericComponentType() instanceof GenericArrayType)
+					gType = (GenericArrayType)gType.getGenericComponentType();
+			}
+		}
+		
+		Template typeParameter = !isTypeVariable ? 
+			createByBaseType(
+				componentType, 
+				enclosing,
+				TemplateType.propertyTypeParameters
+			):
+			createByTypeVariable(
+				enclosing, 
+				foundTypeVariable, 
+				TemplateType.propertyTypeParameters
+			);
 		typeParameter.dimensions(dimensions);
 
 		if(typeParameter.hasTypeParameters() && typeParameter.hasTypeVariableParameter()){
@@ -175,6 +196,7 @@ class TemplateFactory {
 		while (now != null && !now.equals(Object.class)) {
 			Map<String, Template> classTypeParameters = getClassTypeParameters(now, before);
 			classTypeParametersAll.put(now, classTypeParameters);
+			//if contains typevariable, replace super(super->super...)'s parameterized type.
 			if(containTypeVariable(classTypeParameters)){
 				Map<String, Template> classTypeParametersNow = findClassTypeParameters(classTypeParameters);
 				for(Map.Entry<String, Template> each : classTypeParametersNow.entrySet()){
@@ -231,6 +253,11 @@ class TemplateFactory {
 							each.getGenericType()
 						);
 						fieldTemplate.dimensions(typeParameter.dimensions());
+						if(typeParameter.classType() == ClassType.typeVariable){
+							Template realTypeParameter = classTypeParameters.get(typeParameter.templateName());
+							if(realTypeParameter != null)
+								typeParameter = realTypeParameter;
+						}
 						fieldTemplate.addTypeParameter(typeParameter);
 						templates.add(fieldTemplate);
 					} 
@@ -279,14 +306,27 @@ class TemplateFactory {
 						// parameterizedtype
 						else if(typeTemplate instanceof ClassTemplate){
 							if(fieldClassTypeVariables != null){
+								List<Template> typeParameters = new ArrayList<>();
 								for(int i = 0; i < fieldClassTypeVariables.length; i++){
+									Template replaceTypeParameter = typeTemplate.typeParameterAt(i).classType() != ClassType.typeVariable ? 
+										typeTemplate.typeParameterAt(i) :
+										classTypeParameters.get(
+											typeTemplate.typeParameterAt(i).templateName()
+										)
+									;
+									if(replaceTypeParameter == null)
+										replaceTypeParameter = typeTemplate.typeParameterAt(i);
+									replaceTypeParameter.enclosing(fieldTemplate);
+									typeParameters.add(replaceTypeParameter);
 									typeTemplate.addParameterizedType(
 										fieldTemplate.template(),
 										fieldTemplate.typeParameterAt(i),
-										typeTemplate.typeParameterAt(i)
+										replaceTypeParameter
 									);
 								}
+								typeTemplate.typeParameters(typeParameters);
 								fieldTemplate.real(typeTemplate);
+									
 								if(fieldTemplate.hasProperty())
 									fieldTemplate.properties().forEach(t -> {
 										if(t.classType() == ClassType.typeVariable){

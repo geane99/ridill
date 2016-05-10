@@ -220,7 +220,13 @@ abstract class Template{
 	 * @return new instance
 	 */
 	public Object[] componentNewInstance(Integer...s){
-		Class<?> arrayClass = typeParameterAt(0).template();
+		Class<?> arrayClass = null;
+		Template typeParameter = typeParameterAt(0);
+		if(typeParameter.classType() == ClassType.typeVariable && typeParameter.template() == null)
+			arrayClass = Object.class;
+		else
+			arrayClass = typeParameter.template();
+		
 		int[] l = new int[s.length];
 		for(int i = 0; i < s.length; i++)
 			l[i] = s[i];

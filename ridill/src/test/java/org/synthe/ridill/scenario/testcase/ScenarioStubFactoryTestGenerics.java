@@ -3,13 +3,18 @@ package org.synthe.ridill.scenario.testcase;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 import org.synthe.ridill.generate.ValueGenerator;
 import org.synthe.ridill.scenario.domain.TestEmbed;
+import org.synthe.ridill.scenario.domain.TestEntity;
+import org.synthe.ridill.scenario.domain.TestEnum;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariable;
+import org.synthe.ridill.scenario.domain.TestGenericsTypeVariable2;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableImpl;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestAsync;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestAsyncImpl;
@@ -18,6 +23,10 @@ import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSyncImpl;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSyncImplNest;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSyncImplNest2;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestSyncImplNest2Impl;
+import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableUsePropertyTypeParameter;
+import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableUsePropertyTypeParameterImpl;
+import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableUsePropertyTypeParameterNest;
+import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableUsePropertyTypeParameterNestImpl;
 import org.synthe.ridill.scenario.domain.TestInterface;
 import org.synthe.ridill.scenario.domain.TestPrimitive;
 import org.synthe.ridill.stub.StubFactory;
@@ -70,7 +79,13 @@ public class ScenarioStubFactoryTestGenerics{
 			return enums.get(0);
 		}
 	}
-	
+	private <T> List<?> toList(T[] t){
+		return Arrays.asList(t);
+	}
+	@SuppressWarnings("unchecked")
+	private List<Enum<?>> toEnumList(Class<?> e){
+		return (List<Enum<?>>)Arrays.asList(e.getEnumConstants());
+	}
 	private void testGenerateTestEmbed(TestEmbed embed, ValueGeneratorForGenericsTesting generator){
 		//test simple pojo (property is primitive wrapper only)
 		
@@ -143,6 +158,28 @@ public class ScenarioStubFactoryTestGenerics{
 		assertThat(doubleActual2, is(equalTo(doubleExpected2)));
 	}	
 	
+	private void testGenerateTestEntity(TestEntity entity, ValueGeneratorForGenericsTesting generator){
+		//test entity that has pojo and primitive(wrapper), enumeration properties
+		
+		TestEmbed embed = entity.getDomain1();
+		testGenerateTestEmbed(embed, generator);
+		
+		TestPrimitive primitive = entity.getDomain2();
+		testGenerateTestPrimitive(primitive, generator);
+
+		String stringActual = entity.getString();
+		String stringExpected = generator.getString(null);
+		assertThat(stringActual, is(equalTo(stringExpected)));
+		
+		Integer integerActual = entity.getInteger();
+		Integer integerExpected = generator.getInteger(null);
+		assertThat(integerActual, is(equalTo(integerExpected)));
+
+		TestEnum enumActual = entity.getFieldEnum();
+		TestEnum enumExpected = (TestEnum)generator.getEnum(null, toEnumList(TestEnum.class));
+		assertThat(enumActual, is(equalTo(enumExpected)));
+	}	
+	
 	@Test
 	public void testGenericsTypeVariable(){
 		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
@@ -153,7 +190,6 @@ public class ScenarioStubFactoryTestGenerics{
 		assertThat(instance.getString(), is(equalTo(generator.getString(null))));
 		//直接指定されたTypeParameterは取れないのでnullになるはず
 		assertThat(instance.getFieldTypeVariable(), is(equalTo(null)));
-		
 	}
 	
 	@Test
@@ -281,5 +317,406 @@ public class ScenarioStubFactoryTestGenerics{
 		testGenerateTestPrimitive(instance.getNestTypeParameter1(), generator);
 		testGenerateTestPrimitive(instance.getNestTypeParameter2(), generator);
 	}
+	
+	@Test
+	public void testGenericsTypeVariableUsePropertyTypeParameter(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestGenericsTypeVariableUsePropertyTypeParameter<String,String> instance = test.returnTestGenericsTypeVariableUsePropertyTypeParameter();
+		
+		assertThat(instance.getList().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getList().forEach((each)->{
+			assertThat(each, is(equalTo(null)));
+		});
+		
+		assertThat(instance.getCollection().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getCollection().forEach((each)->{
+			assertThat(each, is(equalTo(null)));
+		});
 
+		assertThat(instance.getQueue().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getQueue().forEach((each)->{
+			assertThat(each, is(equalTo(null)));
+		});
+
+		//hashがnullしかないので1になる
+		assertThat(instance.getSet().size(), is(equalTo(1)));
+		instance.getSet().forEach((each)->{
+			assertThat(each, is(equalTo(null)));
+		});
+		
+		//keyがnullしかないので1になる
+		assertThat(instance.getMap().entrySet().size(), is(equalTo(1)));
+		instance.getMap().entrySet().forEach((each)->{
+			assertThat(each.getKey(), is(equalTo(null)));
+			assertThat(each.getValue(), is(equalTo(null)));
+		});
+		
+		try{
+			assertThat(instance.getArray1().length, is(equalTo(generator.getCollectionSize(null))));
+			fail("Expected exception thrown!");
+		}
+		catch(ClassCastException cce){
+		}
+		Object[] array1 = instance.getArray1();
+		assertThat(array1.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array1).forEach((Object each) -> {
+			assertThat(each, is(equalTo(null)));
+		});
+		
+		Object[][] array2 = instance.getArray2();
+		assertThat(array2.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array2).forEach((i) -> {
+			Object[] i2 = (Object[])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((Object i3) -> {
+				assertThat(i3, is(equalTo(null)));
+			});
+		});
+
+		Object[][][] array3 = instance.getArray3();
+		assertThat(array3.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array3).forEach((i) -> {
+			Object[][] i2 = (Object[][])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((Object i3) -> {
+				Object[] i4 = (Object[])i3;
+				assertThat(i4.length, is(equalTo(generator.getCollectionSize(null))));
+				toList(i4).forEach((Object i5) -> {
+					assertThat(i5, is(equalTo(null)));
+				});
+			});
+		});
+		TestGenericsTypeVariable<String> instance2 = instance.getDomain();
+		assertThat(instance2.getString(), is(equalTo(generator.getString(null))));
+		//直接指定されたTypeParameterは取れないのでnullになるはず
+		assertThat(instance2.getFieldTypeVariable(), is(equalTo(null)));
+
+	}
+	
+	@Test
+	public void testGenericsTypeVariableUsePropertyTypeParameterImpl(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestGenericsTypeVariableUsePropertyTypeParameterImpl instance = test.returnTestGenericsTypeVariableUsePropertyTypeParameterImpl();
+
+		assertThat(instance.getList().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getList().forEach((each)->{
+			testGenerateTestEntity(each, generator);
+		});
+		
+		assertThat(instance.getCollection().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getCollection().forEach((each)->{
+			testGenerateTestEntity(each, generator);
+		});
+
+		assertThat(instance.getQueue().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getQueue().forEach((each)->{
+			testGenerateTestEntity(each, generator);
+		});
+
+		assertThat(instance.getSet().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getSet().forEach((each)->{
+			testGenerateTestEntity(each, generator);
+		});
+		
+		assertThat(instance.getMap().entrySet().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getMap().entrySet().forEach((each)->{
+			testGenerateTestEntity(each.getKey(), generator);
+			testGenerateTestEmbed(each.getValue(), generator);
+		});
+		
+		TestEntity[] array1 = instance.getArray1();
+		assertThat(array1.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array1).forEach(each -> {
+			TestEntity e = (TestEntity)each;
+			testGenerateTestEntity(e, generator);
+		});
+		
+		TestEntity[][] array2 = instance.getArray2();
+		assertThat(array2.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array2).forEach((i) -> {
+			TestEntity[] i2 = (TestEntity[])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((Object i3) -> {
+				TestEntity e = (TestEntity)i3;
+				testGenerateTestEntity(e, generator);
+			});
+		});
+
+		TestEntity[][][] array3 = instance.getArray3();
+		assertThat(array3.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array3).forEach((i) -> {
+			TestEntity[][] i2 = (TestEntity[][])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((Object i3) -> {
+				TestEntity[] i4 = (TestEntity[])i3;
+				assertThat(i4.length, is(equalTo(generator.getCollectionSize(null))));
+				toList(i4).forEach((Object i5) -> {
+					TestEntity e = (TestEntity)i5;
+					testGenerateTestEntity(e, generator);
+				});
+			});
+		});
+		TestGenericsTypeVariable<TestEntity> instance2 = instance.getDomain();
+		assertThat(instance2.getString(), is(equalTo(generator.getString(null))));
+		testGenerateTestEntity(instance2.getFieldTypeVariable(), generator);
+	}
+	
+	@Test
+	public void testGenericsTypeVariableUsePropertyTypeParameterNest(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestGenericsTypeVariableUsePropertyTypeParameterNest<String,String> instance = test.returnTestGenericsTypeVariableUsePropertyTypeParameterNest();
+		
+		assertThat(instance.getList().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getList().forEach((each)->{
+			assertThat(each, is(equalTo(null)));
+		});
+		
+		assertThat(instance.getCollection().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getCollection().forEach((each)->{
+			assertThat(each, is(equalTo(null)));
+		});
+
+		assertThat(instance.getQueue().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getQueue().forEach((each)->{
+			assertThat(each, is(equalTo(null)));
+		});
+
+		//hashがnullしかないので1になる
+		assertThat(instance.getSet().size(), is(equalTo(1)));
+		instance.getSet().forEach((each)->{
+			assertThat(each, is(equalTo(null)));
+		});
+		
+		//keyがnullしかないので1になる
+		assertThat(instance.getMap().entrySet().size(), is(equalTo(1)));
+		instance.getMap().entrySet().forEach((each)->{
+			assertThat(each.getKey(), is(equalTo(null)));
+			assertThat(each.getValue(), is(equalTo(null)));
+		});
+		
+		try{
+			assertThat(instance.getArray1().length, is(equalTo(generator.getCollectionSize(null))));
+			fail("Expected exception thrown!");
+		}
+		catch(ClassCastException cce){
+		}
+		Object[] array1 = instance.getArray1();
+		assertThat(array1.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array1).forEach((Object each) -> {
+			assertThat(each, is(equalTo(null)));
+		});
+		
+		Object[][] array2 = instance.getArray2();
+		assertThat(array2.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array2).forEach((i) -> {
+			Object[] i2 = (Object[])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((Object i3) -> {
+				assertThat(i3, is(equalTo(null)));
+			});
+		});
+
+		Object[][][] array3 = instance.getArray3();
+		assertThat(array3.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array3).forEach((i) -> {
+			Object[][] i2 = (Object[][])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((Object i3) -> {
+				Object[] i4 = (Object[])i3;
+				assertThat(i4.length, is(equalTo(generator.getCollectionSize(null))));
+				toList(i4).forEach((Object i5) -> {
+					assertThat(i5, is(equalTo(null)));
+				});
+			});
+		});
+		TestGenericsTypeVariable<String> instance2 = instance.getDomain();
+		assertThat(instance2.getString(), is(equalTo(generator.getString(null))));
+		//直接指定されたTypeParameterは取れないのでnullになるはず
+		assertThat(instance2.getFieldTypeVariable(), is(equalTo(null)));
+		
+		assertThat(instance.getList2().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getList2().forEach((each)->{
+			//setなのでnullキーのサイズ1になるはず
+			assertThat(each.size(), is(equalTo(1)));
+			each.forEach(e2 -> {
+				assertThat(e2, is(equalTo(null)));
+			});
+		});
+		
+		assertThat(instance.getCollection2().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getCollection2().forEach((each)->{
+			assertThat(each.size(), is(equalTo(generator.getCollectionSize(null))));
+			each.forEach(e2 -> {
+				assertThat(e2, is(equalTo(null)));
+			});
+		});
+
+		assertThat(instance.getQueue2().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getQueue2().forEach((each)->{
+			assertThat(each.size(), is(equalTo(generator.getCollectionSize(null))));
+			each.forEach(e2 -> {
+				assertThat(e2, is(equalTo(null)));
+			});
+		});
+
+		//hashがnullしかないので1になる
+		assertThat(instance.getSet2().size(), is(equalTo(1)));
+		instance.getSet2().forEach((each)->{
+			assertThat(each.size(), is(equalTo(generator.getCollectionSize(null))));
+			each.forEach(e2 -> {
+				assertThat(e2, is(equalTo(null)));
+			});
+		});
+		
+		//keyがnullしかないので1になる
+		assertThat(instance.getMap2().entrySet().size(), is(equalTo(1)));
+		instance.getMap2().entrySet().forEach((each)->{
+			assertThat(each.getKey().size(), is(equalTo(generator.getCollectionSize(null))));
+			each.getKey().forEach(e2 -> {
+				assertThat(e2, is(equalTo(null)));
+			});
+			
+			//keyがnullしかないので1になる
+			assertThat(each.getValue().size(), is(equalTo(1)));
+			each.getValue().forEach(e2 -> {
+				assertThat(e2, is(equalTo(null)));
+			});
+		});
+		
+		TestGenericsTypeVariable<TestGenericsTypeVariable2<String>> instance3 = instance.getDomain2();
+		assertThat(instance3.getString(), is(equalTo(generator.getString(null))));
+		TestGenericsTypeVariable2<String> instance4 = instance3.getFieldTypeVariable();
+		assertThat(instance4.getInteger(), is(equalTo(generator.getInteger(null))));
+		//直接指定されたTypeParameterは取れないのでnullになるはず
+		assertThat(instance4.getFieldTypeVariable(), is(equalTo(null)));
+	}
+	
+	@Test
+	public void testGenericsTypeVariableUsePropertyTypeParameterNestImpl(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestGenericsTypeVariableUsePropertyTypeParameterNestImpl instance = test.returnTestGenericsTypeVariableUsePropertyTypeParameterNestImpl();
+
+		assertThat(instance.getList().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getList().forEach((each)->{
+			testGenerateTestEntity(each, generator);
+		});
+		
+		assertThat(instance.getCollection().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getCollection().forEach((each)->{
+			testGenerateTestEntity(each, generator);
+		});
+
+		assertThat(instance.getQueue().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getQueue().forEach((each)->{
+			testGenerateTestEntity(each, generator);
+		});
+
+		assertThat(instance.getSet().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getSet().forEach((each)->{
+			testGenerateTestEntity(each, generator);
+		});
+		
+		assertThat(instance.getMap().entrySet().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getMap().entrySet().forEach((each)->{
+			testGenerateTestEntity(each.getKey(), generator);
+			testGenerateTestEmbed(each.getValue(), generator);
+		});
+		
+		TestEntity[] array1 = instance.getArray1();
+		assertThat(array1.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array1).forEach(each -> {
+			TestEntity e = (TestEntity)each;
+			testGenerateTestEntity(e, generator);
+		});
+		
+		TestEntity[][] array2 = instance.getArray2();
+		assertThat(array2.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array2).forEach((i) -> {
+			TestEntity[] i2 = (TestEntity[])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((Object i3) -> {
+				TestEntity e = (TestEntity)i3;
+				testGenerateTestEntity(e, generator);
+			});
+		});
+
+		TestEntity[][][] array3 = instance.getArray3();
+		assertThat(array3.length, is(equalTo(generator.getCollectionSize(null))));
+		toList(array3).forEach((i) -> {
+			TestEntity[][] i2 = (TestEntity[][])i;
+			assertThat(i2.length, is(equalTo(generator.getCollectionSize(null))));
+			toList(i2).forEach((Object i3) -> {
+				TestEntity[] i4 = (TestEntity[])i3;
+				assertThat(i4.length, is(equalTo(generator.getCollectionSize(null))));
+				toList(i4).forEach((Object i5) -> {
+					TestEntity e = (TestEntity)i5;
+					testGenerateTestEntity(e, generator);
+				});
+			});
+		});
+		TestGenericsTypeVariable<TestEntity> instance2 = instance.getDomain();
+		assertThat(instance2.getString(), is(equalTo(generator.getString(null))));
+		testGenerateTestEntity(instance2.getFieldTypeVariable(), generator);
+		
+		
+		assertThat(instance.getList2().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getList2().forEach((each)->{
+			//setなので生成された同じ値しか入らないので1つのはず
+			assertThat(each.size(), is(equalTo(1)));
+			each.forEach(e2 -> {
+				testGenerateTestEntity(e2, generator);
+			});
+		});
+		
+		assertThat(instance.getCollection2().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getCollection2().forEach((each)->{
+			assertThat(each.size(), is(equalTo(generator.getCollectionSize(null))));
+			each.forEach(e2 -> {
+				testGenerateTestEntity(e2, generator);
+			});
+		});
+
+		assertThat(instance.getQueue2().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getQueue2().forEach((each)->{
+			assertThat(each.size(), is(equalTo(generator.getCollectionSize(null))));
+			each.forEach(e2 -> {
+				testGenerateTestEntity(e2, generator);
+			});
+		});
+
+		assertThat(instance.getSet2().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getSet2().forEach((each)->{
+			assertThat(each.size(), is(equalTo(generator.getCollectionSize(null))));
+			each.forEach(e2 -> {
+				testGenerateTestEntity(e2, generator);
+			});
+		});
+		
+		assertThat(instance.getMap2().entrySet().size(), is(equalTo(generator.getCollectionSize(null))));
+		instance.getMap2().entrySet().forEach((each)->{
+			assertThat(each.getKey().size(), is(equalTo(generator.getCollectionSize(null))));
+			each.getKey().forEach(e2 -> {
+				testGenerateTestEntity(e2, generator);
+			});
+			
+			assertThat(each.getValue().size(), is(equalTo(generator.getCollectionSize(null))));
+			each.getValue().forEach(e2 -> {
+				testGenerateTestEmbed(e2, generator);
+			});
+		});
+		
+		TestGenericsTypeVariable<TestGenericsTypeVariable2<TestEntity>> instance3 = instance.getDomain2();
+		assertThat(instance3.getString(), is(equalTo(generator.getString(null))));
+		TestGenericsTypeVariable2<TestEntity> instance4 = instance3.getFieldTypeVariable();
+		assertThat(instance4.getInteger(), is(equalTo(generator.getInteger(null))));
+		testGenerateTestEntity(instance4.getFieldTypeVariable(), generator);
+	}
 }
