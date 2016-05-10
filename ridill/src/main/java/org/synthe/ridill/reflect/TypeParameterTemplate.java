@@ -11,7 +11,7 @@ import org.synthe.ridill.stub.TargetInfo;
  * @since 2015/01/18
  * @version 1.0.0
  */
-class TypeParameterTemplate extends Template{
+class TypeParameterTemplate extends ClassTemplate{
 	/**
 	 * generics definiton
 	 * @since 2015/01/18
@@ -91,6 +91,15 @@ class TypeParameterTemplate extends Template{
 		_template = type;
 		_classType = ClassType.get(type);
 		_templateType = TemplateType.typeParameter;
+	}
+	/**
+	 * Get typeVariable
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return typeVariable
+	 */
+	public TypeVariable<?> typeVariable(){
+		return _typeVariable;
 	}
 	/*
 	 * (non-Javadoc)

@@ -331,7 +331,11 @@ abstract class Template{
 	 * @return name of target class
 	 */
 	public String templateName(){
-		return _template.getName();
+		if(_template != null)
+			return _template.getName();
+		if(_classType == ClassType.typeVariable && hasTypeParameters())
+			return typeParameterAt(0).templateName();
+		return null;
 	}
 	/**
 	 * getter type parameters

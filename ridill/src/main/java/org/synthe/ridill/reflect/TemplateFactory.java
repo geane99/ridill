@@ -23,53 +23,53 @@ class TemplateFactory {
 	/**
 	 * Generate the {@link Template} from the return value.
 	 * @since 2015/01/18
- 	 * @version 1.0.0
+	 * @version 1.0.0
 	 * @param method method that will be called
 	 * @param instance instance of the method to be invoked
-	 * @param args parameters 
+	 * @param args parameters
 	 * @return {@link Template}
 	 */
-	public Template createByReturnType(Method method, Object instance, Object...args){
+	public Template createByReturnType(Method method, Object instance,Object... args){
 		Class<?> returnType = method.getReturnType();
 		Type typeParameter = method.getGenericReturnType();
-		
+
 		Class<?> enclosing = instance != null && !(instance instanceof Proxy) ? 
-			instance.getClass() : 
-			method.getDeclaringClass();
+				instance.getClass() : 
+				method.getDeclaringClass();
 
 		Template enclosingTemplate = createByClassType(enclosing, null);
-		
-		//return type is type parameter of class
+
+		// return type is type parameter of class
 		if(typeParameter != null && typeParameter instanceof TypeVariable<?>){
-			TypeParameterTemplate typeParameterTemplate = (TypeParameterTemplate)createByTypeVariable(
+			TypeParameterTemplate typeParameterTemplate = (TypeParameterTemplate) createByTypeVariable(
 				enclosingTemplate, 
-				(TypeVariable<?>)typeParameter, 
+				(TypeVariable<?>) typeParameter,
 				TemplateType.methodTypeParameter
 			);
-			ClassTemplate real = (ClassTemplate)enclosingTemplate
-				.findEnclosingParameterizedTypeByTypeVariable(typeParameterTemplate);
-			if(real != null){
+			
+			ClassTemplate real = (ClassTemplate) enclosingTemplate
+					.findEnclosingParameterizedTypeByTypeVariable(typeParameterTemplate);
+			if (real != null){
 				MethodTemplate template = new MethodTemplate(method, real);
 				return template;
-			}
+			} 
 			else{
 				MethodTemplate template = new MethodTemplate(method, typeParameterTemplate);
 				return template;
 			}
 		}
 		else{
-			ClassTemplate real = (ClassTemplate)createByClassType(returnType, enclosingTemplate);
+			ClassTemplate real = (ClassTemplate) createByClassType(returnType, enclosingTemplate);
 			MethodTemplate template = new MethodTemplate(method, real);
 			return template;
 		}
 	}
 
-	
 	/**
 	 * Generate the {@link Template} from the {@link Class}
 	 * @since 2015/01/18
- 	 * @version 1.0.0
-	 * @param clazz target 
+	 * @version 1.0.0
+	 * @param clazz target
 	 * @return {@link Template}
 	 */
 	public ClassTemplate createByClassType(Class<?> clazz, Template enclosing){
@@ -93,19 +93,23 @@ class TemplateFactory {
 			}
 		}
 		if(template.isAnonymousClass()){
-			if(enclosing != null)
+			if (enclosing != null)
 				template.enclosing(enclosing);
 			else{
 				Class<?> enclosingClass = clazz.getEnclosingClass();
 				Template nestEnclosing = createByClassType(enclosingClass, null);
 				template.enclosing(nestEnclosing);
 			}
-		}		
-		
+		}
+
 		TypeVariable<?>[] parameters = clazz.getTypeParameters();
 		if(parameters != null){
 			for(TypeVariable<?> each : parameters){
-				Template param = createByTypeVariable(template, each, TemplateType.itsetfTypeParameters);
+				Template param = createByTypeVariable(
+					template, 
+					each,
+					TemplateType.itsetfTypeParameters
+				);
 				template.addTypeParameter(param);
 			}
 		}
@@ -115,13 +119,12 @@ class TemplateFactory {
 		}
 		return template;
 	}
-	
-	
+
 	/**
 	 * Generate the {@link Template} from the {@link Class}
 	 * @since 2015/01/18
- 	 * @version 1.0.0
-	 * @param clazz target 
+	 * @version 1.0.0
+	 * @param clazz target
 	 * @return {@link Template}
 	 */
 	private Template createArrayTypeParameter(Class<?> clazz, Template enclosing, Type genericType){
@@ -131,18 +134,18 @@ class TemplateFactory {
 			componentType = componentType.getComponentType();
 			dimensions++;
 		}
-		
+
 		Template typeParameter = createByBaseType(
-			componentType,
+			componentType, 
 			enclosing,
 			TemplateType.propertyTypeParameters
 		);
 		typeParameter.dimensions(dimensions);
-		
+
 		if(typeParameter.hasTypeParameters() && typeParameter.hasTypeVariableParameter()){
 			Template typeTemplateGenericParameter = createByBaseType(
 				genericType, 
-				typeParameter, 
+				typeParameter,
 				TemplateType.propertyTypeParameters
 			);
 			typeParameter.real(typeTemplateGenericParameter);
@@ -150,99 +153,163 @@ class TemplateFactory {
 		typeParameter.enclosing(enclosing);
 		return typeParameter;
 	}
-	
+
 	/**
 	 * Generate the {@link Template} from the property that has enclosing of class.
 	 * @since 2015/01/18
- 	 * @version 1.0.0
-	 * @param enclosing {@link Template} that enclosing the properties.
+	 * @version 1.0.0
+	 * @param enclosing
+	 *            {@link Template} that enclosing the properties.
 	 * @return {@link Template}
 	 */
 	private List<Template> createFieldTypeAll(Template enclosing){
 		Class<?> enclosingClass = enclosing.template();
 		List<Template> templates = new ArrayList<Template>();
-		
+
 		Class<?> now = enclosingClass;
 		Class<?> before = null;
+		List<Class<?>> inheritanceStructure = new ArrayList<>();
+		Map<Class<?>, Map<String,Template>> classTypeParametersAll =
+			new HashMap<>();
 		
-		while(now != null && !now.equals(Object.class)){
-			Map<String,Template> classTypeParameters = getClassTypeParameters(now, before);
-			enclosing.addRealParameterizedTypes(enclosingClass, classTypeParameters);
+		while (now != null && !now.equals(Object.class)) {
+			Map<String, Template> classTypeParameters = getClassTypeParameters(now, before);
+			classTypeParametersAll.put(now, classTypeParameters);
+			if(containTypeVariable(classTypeParameters)){
+				Map<String, Template> classTypeParametersNow = findClassTypeParameters(classTypeParameters);
+				for(Map.Entry<String, Template> each : classTypeParametersNow.entrySet()){
+					for(int i = inheritanceStructure.size() - 1; i >= 0; i--){
+						Class<?> parentClass = inheritanceStructure.get(i);
+						if(parentClass == null)
+							break;
+						Map<String, Template> classTypeParametersSuper = classTypeParametersAll.get(parentClass);
+						Template target = classTypeParametersSuper.get(each.getKey());
+						if(target != null){
+							if(target instanceof TypeParameterTemplate)
+								continue;
+							classTypeParameters.put(each.getKey(), target);
+							break;
+						}
+						else
+							break;
+					}
+					
+				}
+			}
+			classTypeParametersAll.put(now, classTypeParameters);
+			enclosing.addRealParameterizedTypes(enclosingClass,classTypeParameters);
 
 			List<Field> allFields = Arrays.asList(now.getDeclaredFields());
-			
-			if(allFields.size() > 0){
-				for(Field each : allFields){
-					//ignore JVM synthesize methods and fields.
-					if(each.isSynthetic())
+
+			if (allFields.size() > 0) {
+				for (Field each : allFields) {
+					// ignore JVM synthesize methods and fields.
+					if (each.isSynthetic())
 						continue;
 					Class<?> fieldClass = each.getType();
-					if(!each.getDeclaringClass().equals(now))
+					if (!each.getDeclaringClass().equals(now))
 						continue;
-					
-					ClassTemplate fieldClassType = !enclosing.isEnum() ?
-						createByClassType(fieldClass, enclosing) : 
-						(ClassTemplate)enclosing
+
+					ClassTemplate fieldClassType = !enclosing.isEnum() ? 
+						createByClassType(
+							fieldClass, 
+							enclosing
+						) : 
+						(ClassTemplate) enclosing
 					;
-					FieldTemplate fieldTemplate = new FieldTemplate(each, fieldClassType);
+							
+					FieldTemplate fieldTemplate = new FieldTemplate(
+						each,
+						fieldClassType
+					);
 					fieldTemplate.enclosing(enclosing);
-					
+
 					if(fieldTemplate.isArray()){
 						Template typeParameter = createArrayTypeParameter(
-							fieldClass,
+							fieldClass, 
 							fieldTemplate,
 							each.getGenericType()
 						);
 						fieldTemplate.dimensions(typeParameter.dimensions());
-						
 						fieldTemplate.addTypeParameter(typeParameter);
 						templates.add(fieldTemplate);
-					}
+					} 
 					else{
 						TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
 						if(fieldClassTypeVariables != null){
 							for(TypeVariable<?> fieldTypeVariable : fieldClassTypeVariables){
 								Template fieldTypeVariableTemplate = createByTypeVariable(
 									fieldTemplate, 
-									fieldTypeVariable, 
+									fieldTypeVariable,
 									TemplateType.propertyTypeParameters
 								);
 								fieldTemplate.addTypeParameter(fieldTypeVariableTemplate);
 							}
 						}
-						
+
 						Type type = each.getGenericType();
 						Template typeTemplate = createByBaseType(
-							type, 
-							fieldTemplate, 
+							type,
+							fieldTemplate,
 							TemplateType.propertyTypeParameters
 						);
 						if(typeTemplate instanceof TypeParameterTemplate){
-							TypeParameterTemplate parameterTemplate = (TypeParameterTemplate)typeTemplate;
+							TypeParameterTemplate parameterTemplate = (TypeParameterTemplate) typeTemplate;
+
 							if(parameterTemplate.isTypeVariableParameter()){
+								if(fieldClassTypeVariables != null) {
+									for(int i = 0; i < fieldClassTypeVariables.length; i++){
+										classTypeParameters.put(
+											fieldTemplate.typeParameterAt(i).templateName(),
+											typeTemplate.typeParameterAt(i)
+										);
+									}
+								}
 								Template real = classTypeParameters.get(parameterTemplate.templateName());
 								if(real != null){
 									parameterTemplate.real(real);
 									fieldTemplate.real(parameterTemplate);
-								}
-								else if(fieldClass.equals(Object.class))
+								} 
+								else if(fieldClass.equals(Object.class)){
 									fieldTemplate.real(typeTemplate);
+									fieldTemplate.addTypeParameter(typeTemplate);
+								}
 							}
 						}
-						else if(typeTemplate instanceof ClassTemplate)
-							fieldTemplate.real(typeTemplate);
+						// parameterizedtype
+						else if(typeTemplate instanceof ClassTemplate){
+							if(fieldClassTypeVariables != null){
+								for(int i = 0; i < fieldClassTypeVariables.length; i++){
+									typeTemplate.addParameterizedType(
+										fieldTemplate.template(),
+										fieldTemplate.typeParameterAt(i),
+										typeTemplate.typeParameterAt(i)
+									);
+								}
+								fieldTemplate.real(typeTemplate);
+								if(fieldTemplate.hasProperty())
+									fieldTemplate.properties().forEach(t -> {
+										if(t.classType() == ClassType.typeVariable){
+											Template real = typeTemplate.findEnclosingParameterizedTypeByTypeVariable(t);
+											if(real != null)
+												t.real(real);
+										}
+									});
+							}
+						}
 						templates.add(fieldTemplate);
 					}
-					//end for
+					// end for
 				}
 			}
+			inheritanceStructure.add(now);
 			before = now;
 			now = now.getSuperclass();
 		}
-		
+
 		return templates;
 	}
-	
+
 	/**
 	 * Generate the {@link Template} from the {@link TypeVariable}
 	 * @param enclosing {@link Class} that enclosing the type parameter
@@ -251,44 +318,52 @@ class TemplateFactory {
 	 * @return {@link Template}
 	 */
 	private TypeParameterTemplate createByTypeVariable(Template enclosing, TypeVariable<?> parameterType, TemplateType templateType){
-		TypeParameterTemplate param = 
-			new TypeParameterTemplate(templateType, parameterType, enclosing);
+		TypeParameterTemplate param = new TypeParameterTemplate(
+			templateType,
+			parameterType, 
+			enclosing
+		);
 		return param;
 	}
-	
+
 	/**
 	 * Generate the {@link Template} from the parameterized type.
 	 * @since 2015/01/18
- 	 * @version 1.0.0
-	 * @param enclosing {@link Class} that enclosing the type parameter 
+	 * @version 1.0.0
+	 * @param enclosing {@link Class} that enclosing the type parameter
 	 * @param parameterType type parameter
 	 * @param templateType what type parameterization
 	 * @return {@link Template}
 	 */
 	private Template createByParameterizedType(Template enclosing, ParameterizedType parameterType, TemplateType templateType){
 		Type type = parameterType.getRawType();
-		Template typeTemplate = createByBaseType(type, enclosing,templateType);
+		Template typeTemplate = createByBaseType(type, enclosing, templateType);
 		Type[] actuals = parameterType.getActualTypeArguments();
-		
-		if(templateType == TemplateType.itsetfTypeParameters || 
-		   templateType == TemplateType.propertyTypeParameters || 
-		   templateType == TemplateType.methodTypeParameter)
+
+		if( templateType == TemplateType.itsetfTypeParameters || 
+			templateType == TemplateType.propertyTypeParameters || 
+			templateType == TemplateType.methodTypeParameter
+		)
 			typeTemplate.clearTypeParameters();
-		
+
 		if(actuals != null){
 			for(Type each : actuals){
-				Template eachTemplate = createByBaseType(each, enclosing, templateType);
+				Template eachTemplate = createByBaseType(
+					each, 
+					enclosing,
+					templateType
+				);
 				typeTemplate.addTypeParameter(eachTemplate);
 			}
 		}
 		return typeTemplate;
-		
+
 	}
-	
+
 	/**
 	 * Geneate the {@link Template} from the type parameter.
 	 * @since 2015/01/18
- 	 * @version 1.0.0
+	 * @version 1.0.0
 	 * @param enclosing {@link Class} that enclosing the type parameter
 	 * @param clazz type parameter
 	 * @param templateType what type parameterization
@@ -297,11 +372,15 @@ class TemplateFactory {
 	public Template createByClassType(Template enclosing, Class<?> clazz, TemplateType templateType){
 		ClassTemplate template = new ClassTemplate(clazz);
 		template.enclosing(enclosing);
-		
+
 		TypeVariable<?>[] parameters = clazz.getTypeParameters();
 		if(parameters != null){
-			for(TypeVariable<?> each : parameters){
-				Template param = createByTypeVariable(template, each, templateType);
+			for (TypeVariable<?> each : parameters) {
+				Template param = createByTypeVariable(
+					template, 
+					each,
+					templateType
+				);
 				template.addTypeParameter(param);
 			}
 		}
@@ -311,36 +390,40 @@ class TemplateFactory {
 		}
 		return template;
 	}
-	
+
 	/**
 	 * Geneate the {@link Template} from the generic array type parameter.
 	 * @since 2015/01/18
- 	 * @version 1.0.0
+	 * @version 1.0.0
 	 * @param enclosing {@link Class} that enclosing the type parameter
 	 * @param type type parameter
 	 * @param templateType what type parameterization
 	 * @return {@link Template}
 	 */
 	public Template createByGenericArrayType(Template enclosing, GenericArrayType type, TemplateType templateType){
-		return createByBaseType(type.getGenericComponentType(), enclosing, templateType);
+		return createByBaseType(
+			type.getGenericComponentType(), 
+			enclosing,
+			templateType
+		);
 	}
-	
+
 	/**
 	 * Generate the {@link Template} from the {@link Type}
 	 * @since 2015/01/18
- 	 * @version 1.0.0
+	 * @version 1.0.0
 	 * @param type {@link Type}
 	 * @param enclosing {@link Class} that enclosing the type parameter
 	 * @param templateType what type parameterization
 	 * @return {@link Template}
 	 */
 	private Template createByBaseType(Type type, Template enclosing, TemplateType templateType){
-		if(type instanceof Class<?>){
-			Class<?> clazz = (Class<?>)type;
+		if (type instanceof Class<?>) {
+			Class<?> clazz = (Class<?>) type;
 			if(clazz.isArray()){
 				ClassTemplate arrayTemplate = new ClassTemplate(clazz);
 				Template typeParameter = createArrayTypeParameter(
-					clazz, 
+					clazz,
 					arrayTemplate, 
 					clazz.getGenericSuperclass()
 				);
@@ -349,74 +432,77 @@ class TemplateFactory {
 				arrayTemplate.enclosing(enclosing);
 				return arrayTemplate;
 			}
-			
+
 			return createByClassType(
 				enclosing, 
-				(Class<?>)type, 
+				(Class<?>)type,
 				TemplateType.propertyTypeParameters
 			);
 		}
 		else if(type instanceof ParameterizedType)
 			return createByParameterizedType(
-				enclosing, 
+				enclosing,
 				(ParameterizedType)type, 
 				templateType
 			);
-		
+
 		else if(type instanceof TypeVariable<?>)
 			return createByTypeVariable(
 				enclosing, 
-				(TypeVariable<?>)type, 
+				(TypeVariable<?>)type,
 				TemplateType.propertyTypeParameters
 			);
 		else if(type instanceof GenericArrayType)
 			return createByGenericArrayType(
-				enclosing,
+				enclosing, 
 				(GenericArrayType)type,
 				templateType
 			);
 		return null;
-	}	
-	
+	}
+
 	/**
 	 * Get a {@link Map} of generics name and type parameters of the class definition.
 	 * @since 2015/01/18
- 	 * @version 1.0.0
+	 * @version 1.0.0
 	 * @param now superclass
 	 * @param before baseclass
 	 * @return {@link Template}
 	 */
-	private Map<String,Template> getClassTypeParameters(Class<?> now, Class<?> before){
-		Map<String,Template> classTypeParameters = new HashMap<String,Template>();
-		
+	private Map<String, Template> getClassTypeParameters(Class<?> now, Class<?> before){
+		Map<String, Template> classTypeParameters = new HashMap<String, Template>();
+
 		if(before != null){
 			Type superGenericsTypeParameter = before.getGenericSuperclass();
-			
-			if(superGenericsTypeParameter != null){
+
+			if (superGenericsTypeParameter != null) {
 				TypeVariable<?>[] superGenericsTypeDifinition = now.getTypeParameters();
-				if(superGenericsTypeDifinition != null){
+				if (superGenericsTypeDifinition != null) {
 
 					int index = 0;
-					
 					for(TypeVariable<?> each : superGenericsTypeDifinition){
-						Template superClassDifinition = createByClassType(now, null);
+						Template superClassDifinition = createByClassType(
+							now,
+							null
+						);
 
 						Template superClassTypeParameterDifinisionTemplate = createByBaseType(
 							each, 
-							superClassDifinition, 
+							superClassDifinition,
 							TemplateType.itsetfTypeParameters
 						);
 
 						Template superGenericsTypeTemplate = createByBaseType(
-							superGenericsTypeParameter, null, 
+							superGenericsTypeParameter, 
+							null,
 							TemplateType.itsetfTypeParameters
 						);
-						
+
 						Template pairClassTypeParameterParameterizedTypeTemplate = 
 							superGenericsTypeTemplate.typeParameterAt(index++);
-						
+
 						classTypeParameters.put(
-							superClassTypeParameterDifinisionTemplate.templateName(), 
+							superClassTypeParameterDifinisionTemplate.templateName(),
 							pairClassTypeParameterParameterizedTypeTemplate
 						);
 					}
@@ -424,5 +510,21 @@ class TemplateFactory {
 			}
 		}
 		return classTypeParameters;
+	}
+	
+	private Boolean containTypeVariable(Map<String, Template> store){
+		for(Map.Entry<String, Template> each : store.entrySet()){
+			if(each.getValue().classType() == ClassType.typeVariable)
+				return true;
+		}
+		return false;
+	}
+	private Map<String, Template> findClassTypeParameters(Map<String,Template> store){
+		Map<String,Template> result = new HashMap<>();
+		for(Map.Entry<String, Template> each : store.entrySet()){
+			if(each.getValue().classType() == ClassType.typeVariable)
+				result.put(each.getKey(), each.getValue());
+		}
+		return result;
 	}
 }

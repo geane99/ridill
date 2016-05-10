@@ -26,6 +26,16 @@ class ClassTemplate extends Template{
 	 * @version 1.0.0
 	 */
 	private List<Template> _methods;
+	
+	/**
+	 * default constructor
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 */
+	public ClassTemplate(){
+		
+	}
+	
 	/**
 	 * constructor
 	 * @since 2015/01/18
@@ -49,6 +59,15 @@ class ClassTemplate extends Template{
 	 */
 	public List<Template> properties(){
 		return _properties;
+	}
+	/**
+	 * when has properties, return true.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when has properties, return true.
+	 */
+	public Boolean hasProperty(){
+		return _properties != null && _properties.size() > 0;
 	}
 	/**
 	 * set properties that belongs to this temlpate
@@ -114,5 +133,11 @@ class ClassTemplate extends Template{
 		_enclosing = template.enclosing();
 		_parameterizedTypes = template._parameterizedTypes;
 		_properties = template.properties();
+	}
+	@Override
+	public void real(Template real){
+		super.real(real);
+		if(real instanceof ClassTemplate)
+			_properties = ((ClassTemplate)real).properties();
 	}
 }
