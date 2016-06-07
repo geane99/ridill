@@ -74,6 +74,12 @@ class FieldTemplate extends PropertyTemplate{
 	public TargetInfo toTargetInfo(Object instance) {
 		return new FieldTargetInfo(this,instance);
 	}
+	
+	@Override
+	public String toString(){
+		return propertyName() + " " + super.toString();
+	}
+	
 	/**
 	 * Implementation class of {@link TargetInfo}
 	 * @author masahiko.ootsuki

@@ -101,6 +101,19 @@ class TypeParameterTemplate extends ClassTemplate{
 	public TypeVariable<?> typeVariable(){
 		return _typeVariable;
 	}
+	@Override
+	public String toString(){
+		if(_typeVariable != null)
+			return _typeVariable.getTypeName();
+		return super.toString();
+	}
+	@Override
+	public void real(Template real){
+		super.real(real);
+		if(enclosing() != null)
+			_typeVariable = null;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.synthe.ridill.reflect.Template#template()

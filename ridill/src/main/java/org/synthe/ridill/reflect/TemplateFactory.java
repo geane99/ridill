@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * TemplateFactory to generate a wrapper {@link Class}.<br/>
@@ -51,17 +52,17 @@ class TemplateFactory {
 					.findEnclosingParameterizedTypeByTypeVariable(typeParameterTemplate);
 			if (real != null){
 				MethodTemplate template = new MethodTemplate(method, real);
-				return template;
+				return build(template);
 			} 
 			else{
 				MethodTemplate template = new MethodTemplate(method, typeParameterTemplate);
-				return template;
+				return build(template);
 			}
 		}
 		else{
 			ClassTemplate real = (ClassTemplate) createByClassType(returnType, enclosingTemplate);
 			MethodTemplate template = new MethodTemplate(method, real);
-			return template;
+			return build(template);
 		}
 	}
 
@@ -72,7 +73,7 @@ class TemplateFactory {
 	 * @param clazz target
 	 * @return {@link Template}
 	 */
-	public ClassTemplate createByClassType(Class<?> clazz, Template enclosing){
+	private ClassTemplate createByClassType(Class<?> clazz, Template enclosing){
 		ClassTemplate template = new ClassTemplate(clazz);
 		if(template.isLocalClass()){
 			if(enclosing != null)
@@ -189,11 +190,13 @@ class TemplateFactory {
 
 		Class<?> now = enclosingClass;
 		Class<?> before = null;
+		
 		List<Class<?>> inheritanceStructure = new ArrayList<>();
 		Map<Class<?>, Map<String,Template>> classTypeParametersAll =
 			new HashMap<>();
 		
 		while (now != null && !now.equals(Object.class)) {
+			
 			Map<String, Template> classTypeParameters = getClassTypeParameters(now, before);
 			classTypeParametersAll.put(now, classTypeParameters);
 			//if contains typevariable, replace super(super->super...)'s parameterized type.
@@ -232,6 +235,7 @@ class TemplateFactory {
 					if (!each.getDeclaringClass().equals(now))
 						continue;
 
+
 					ClassTemplate fieldClassType = !enclosing.isEnum() ? 
 						createByClassType(
 							fieldClass, 
@@ -254,88 +258,44 @@ class TemplateFactory {
 						);
 						fieldTemplate.dimensions(typeParameter.dimensions());
 						if(typeParameter.classType() == ClassType.typeVariable){
-							Template realTypeParameter = classTypeParameters.get(typeParameter.templateName());
+							Template realTypeParameter = 
+								classTypeParameters.get(typeParameter.templateName());
 							if(realTypeParameter != null)
 								typeParameter = realTypeParameter;
 						}
 						fieldTemplate.addTypeParameter(typeParameter);
 						templates.add(fieldTemplate);
-					} 
+					}
 					else{
 						TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
-						if(fieldClassTypeVariables != null){
+						if( fieldClassTypeVariables != null && 
+							fieldClassTypeVariables.length > 0 && 
+							!fieldTemplate.hasTypeParameters()
+						){
 							for(TypeVariable<?> fieldTypeVariable : fieldClassTypeVariables){
 								Template fieldTypeVariableTemplate = createByTypeVariable(
 									fieldTemplate, 
 									fieldTypeVariable,
 									TemplateType.propertyTypeParameters
 								);
+								
 								fieldTemplate.addTypeParameter(fieldTypeVariableTemplate);
 							}
 						}
-
-						Type type = each.getGenericType();
-						Template typeTemplate = createByBaseType(
-							type,
-							fieldTemplate,
-							TemplateType.propertyTypeParameters
-						);
-						if(typeTemplate instanceof TypeParameterTemplate){
-							TypeParameterTemplate parameterTemplate = (TypeParameterTemplate) typeTemplate;
-
-							if(parameterTemplate.isTypeVariableParameter()){
-								if(fieldClassTypeVariables != null) {
-									for(int i = 0; i < fieldClassTypeVariables.length; i++){
-										classTypeParameters.put(
-											fieldTemplate.typeParameterAt(i).templateName(),
-											typeTemplate.typeParameterAt(i)
-										);
-									}
-								}
-								Template real = classTypeParameters.get(parameterTemplate.templateName());
-								if(real != null){
-									parameterTemplate.real(real);
-									fieldTemplate.real(parameterTemplate);
-								} 
-								else if(fieldClass.equals(Object.class)){
-									fieldTemplate.real(typeTemplate);
-									fieldTemplate.addTypeParameter(typeTemplate);
-								}
-							}
-						}
-						// parameterizedtype
-						else if(typeTemplate instanceof ClassTemplate){
-							if(fieldClassTypeVariables != null){
-								List<Template> typeParameters = new ArrayList<>();
-								for(int i = 0; i < fieldClassTypeVariables.length; i++){
-									Template replaceTypeParameter = typeTemplate.typeParameterAt(i).classType() != ClassType.typeVariable ? 
-										typeTemplate.typeParameterAt(i) :
-										classTypeParameters.get(
-											typeTemplate.typeParameterAt(i).templateName()
-										)
-									;
-									if(replaceTypeParameter == null)
-										replaceTypeParameter = typeTemplate.typeParameterAt(i);
-									replaceTypeParameter.enclosing(fieldTemplate);
-									typeParameters.add(replaceTypeParameter);
-									typeTemplate.addParameterizedType(
-										fieldTemplate.template(),
-										fieldTemplate.typeParameterAt(i),
-										replaceTypeParameter
-									);
-								}
-								typeTemplate.typeParameters(typeParameters);
+						else{
+							Type type = each.getGenericType();
+							Template typeTemplate = createByBaseType(
+								type,
+								fieldTemplate,
+								TemplateType.propertyTypeParameters
+							);
+//							fieldTemplate.typeParameters(new ArrayList<>());
+							
+							if(type instanceof ParameterizedType){
 								fieldTemplate.real(typeTemplate);
-									
-								if(fieldTemplate.hasProperty())
-									fieldTemplate.properties().forEach(t -> {
-										if(t.classType() == ClassType.typeVariable){
-											Template real = typeTemplate.findEnclosingParameterizedTypeByTypeVariable(t);
-											if(real != null)
-												t.real(real);
-										}
-									});
 							}
+							else
+								fieldTemplate.addTypeParameter(typeTemplate);
 						}
 						templates.add(fieldTemplate);
 					}
@@ -346,7 +306,7 @@ class TemplateFactory {
 			before = now;
 			now = now.getSuperclass();
 		}
-
+		
 		return templates;
 	}
 
@@ -409,7 +369,7 @@ class TemplateFactory {
 	 * @param templateType what type parameterization
 	 * @return {@link Template}
 	 */
-	public Template createByClassType(Template enclosing, Class<?> clazz, TemplateType templateType){
+	private Template createByClassType(Template enclosing, Class<?> clazz, TemplateType templateType){
 		ClassTemplate template = new ClassTemplate(clazz);
 		template.enclosing(enclosing);
 
@@ -440,7 +400,7 @@ class TemplateFactory {
 	 * @param templateType what type parameterization
 	 * @return {@link Template}
 	 */
-	public Template createByGenericArrayType(Template enclosing, GenericArrayType type, TemplateType templateType){
+	private Template createByGenericArrayType(Template enclosing, GenericArrayType type, TemplateType templateType){
 		return createByBaseType(
 			type.getGenericComponentType(), 
 			enclosing,
@@ -552,6 +512,61 @@ class TemplateFactory {
 		return classTypeParameters;
 	}
 	
+	private Template build(ClassTemplate target){
+		reflectClassTypeParameters(target, target);
+		return target;
+	}
+	
+	private void reflectClassTypeParameters(ClassTemplate target, Template rootEnclosing){
+		if(!target.hasProperty())
+			return;
+		target.properties().forEach(t -> {
+			reflectTypeVariables(t, rootEnclosing);
+			if(t.isObject() && t.hasTypeParameters())
+				t.real(t.typeParameterAt(0));
+		});
+	}
+	
+	private void reflectTypeVariables(Template target, Template rootEnclosing){
+		if(target.hasTypeParameters() && target.hasTypeVariableParameter()){
+			target.typeParameters().forEach(t -> {
+				if(!target.hasTypeParameters()){
+					reflectTypeVariables(t, rootEnclosing);
+					return;
+				}
+				
+				if(t instanceof TypeParameterTemplate){
+					TypeVariable<?> tv = ((TypeParameterTemplate)t).typeVariable();
+					if(tv != null){
+						Function<Template,Template> resolver = p -> {
+							Template enclosing = p;
+							Template real = null;
+							while(enclosing != null){
+								real = enclosing.findEnclosingParameterizedTypeByTypeVariable(t);
+								if(real != null)
+									break;
+								enclosing = enclosing.enclosing();
+							}
+							return real;
+						};
+						
+						Template real = resolver.apply(t);
+						if(real == null)
+							real = resolver.apply(target);
+						if(real == null)
+							real = resolver.apply(rootEnclosing);
+						
+						if(real != null)
+							t.real(real);
+					}
+				}
+			});
+		}
+		if(target instanceof ClassTemplate && ((ClassTemplate) target).hasProperty())
+			reflectClassTypeParameters((ClassTemplate)target, rootEnclosing);
+	}
+	
+
 	private Boolean containTypeVariable(Map<String, Template> store){
 		for(Map.Entry<String, Template> each : store.entrySet()){
 			if(each.getValue().classType() == ClassType.typeVariable)

@@ -116,7 +116,7 @@ abstract class Template{
 	 */
 	public Template findEnclosingParameterizedTypeByTypeVariable(Template typeVariable){
 		Class<?> target = _template;
-		while(target != null){
+		while(_parameterizedTypes != null && target != null){
 			Map<String,Template> targetTemplateParameterizedTypes = 
 				_parameterizedTypes.get(target.getName());
 			
@@ -383,6 +383,16 @@ abstract class Template{
 		_typeParameters.add(typeParameter);
 	}
 	/**
+	 * replace type parameter
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param typeParameter {@link Template}
+	 * @param index index
+	 */
+	public void replaceTypeParameterAt(Template typeParameter, Integer index){
+		_typeParameters.set(index, typeParameter);
+	}
+	/**
 	 * return type parameters isnt empty.
 	 * @since 2015/01/18
 	 * @version 1.0.0
@@ -595,6 +605,20 @@ abstract class Template{
 	 */
 	public ClassInfo toClassInfo(){
 		return new ClassInfoImpl(this);
+	}
+	@Override
+	public String toString(){
+		if(!hasTypeParameters())
+			return templateName();
+		
+		final StringBuilder b = new StringBuilder();
+		typeParameters().forEach(t -> {
+			if(b.length() > 0)
+				b.append(", ");
+			b.append(t.toString());
+		});
+		
+		return templateName() + "<" + b.toString() + ">";
 	}
 	
 	/**
