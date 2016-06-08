@@ -8,7 +8,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,7 +72,7 @@ abstract class Template{
 	 * @since 2015/01/18
 	 * @version 1.0.0
 	 */
-	protected Map<String, Map<String,Template>> _parameterizedTypes;
+	protected Map<String,Template> _parameterizedTypes;
 	/**
 	 * put a pair of generics definition and parameterized type to target class.
 	 * @since 2015/01/18
@@ -82,31 +81,9 @@ abstract class Template{
 	 * @param typeVariable generics definition
 	 * @param real parameterized type
 	 */
-	public void addParameterizedType(Class<?> enclosing, Template typeVariable, Template real){
-		if(_parameterizedTypes == null)
-			_parameterizedTypes = new HashMap<>();
-		String enclosingName = enclosing.getName();
-		
-		Map<String,Template> targetTemplateParameterizedTypes = _parameterizedTypes.get(enclosingName);
-		if(targetTemplateParameterizedTypes == null){
-			targetTemplateParameterizedTypes = new HashMap<>();
-			_parameterizedTypes.put(enclosingName, targetTemplateParameterizedTypes);
-		}
-		targetTemplateParameterizedTypes.put(typeVariable.templateName(), real);
+	public void addParameterizedType(Template typeVariable, Template real){
+		_parameterizedTypes.put(typeVariable.templateName(), real);
 	}
-	/**
-	 * put a pair of generics definition and parameterized type to target class.
-	 * @since 2015/01/18
-	 * @version 1.0.0
-	 * @param enclosing target class
-	 * @param real parameterized types
-	 */
-	public void addRealParameterizedTypes(Class<?> enclosing, Map<String, Template> realParameterizedTypes){
-		if(_parameterizedTypes == null)
-			_parameterizedTypes = new HashMap<>();
-		_parameterizedTypes.put(enclosing.getName(), realParameterizedTypes);
-	}
-	
 	/**
 	 * find pairs generics definition and parameterized type contained in target class.
 	 * @since 2015/01/18
@@ -115,18 +92,18 @@ abstract class Template{
 	 * @return parameterized type, which is a generics definition and a pair
 	 */
 	public Template findEnclosingParameterizedTypeByTypeVariable(Template typeVariable){
-		Class<?> target = _template;
-		while(_parameterizedTypes != null && target != null){
-			Map<String,Template> targetTemplateParameterizedTypes = 
-				_parameterizedTypes.get(target.getName());
-			
-			if(targetTemplateParameterizedTypes != null && 
-			   targetTemplateParameterizedTypes.containsKey(typeVariable.templateName())
-			)
-				return targetTemplateParameterizedTypes.get(typeVariable.templateName());
-			target = target.getSuperclass();
-		}
-		return null;
+		if(_parameterizedTypes == null)
+			return null;
+		return _parameterizedTypes.get(typeVariable.templateName());
+	}
+	/**
+	 * set parameterizedTypes
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param parameterizedTypes parameterizedTypes
+	 */
+	public void parameterizedTypes(Map<String,Template> parameterizedTypes){
+		_parameterizedTypes = parameterizedTypes;
 	}
 	
 	/**
@@ -182,6 +159,16 @@ abstract class Template{
 	public ClassType classType(){
 		return _classType;
 	}
+	/**
+	 * when classtype is domain, return true.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when classtype is domain, return true.
+	 */
+	public Boolean isDomainClass(){
+		return classType() == ClassType.domainType;
+	}
+	
 	/**
 	 * Set dimensions of array
 	 * @since 2015/01/18
@@ -409,9 +396,12 @@ abstract class Template{
 	 */
 	public Boolean hasTypeVariableParameter(){
 		if(_typeParameters != null)
-			for(Template t : _typeParameters)
+			for(Template t : _typeParameters){
+				if(t.hasTypeVariableParameter())
+					return true;
 				if(t.classType() == ClassType.typeVariable)
 					return true;
+			}
 		return false;
 	}
 	/**
@@ -636,6 +626,10 @@ abstract class Template{
 		 */
 		public ClassInfoImpl(Template template){
 			this._template = template;
+		}
+		@Override
+		public String toString(){
+			return _template.toString();
 		}
 	}
 }

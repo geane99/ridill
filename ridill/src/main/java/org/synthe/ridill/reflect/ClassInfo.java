@@ -126,7 +126,7 @@ public class ClassInfo {
 	 */
 	public List<ClassInfo> properties(){
 		List<ClassInfo> r = new ArrayList<>();
-		if(_template.templateType() == TemplateType.itself || _template.templateType() == TemplateType.property){
+		if(_template.templateType() == TemplateType.itself || _template.templateType() == TemplateType.property || _template.templateType() == TemplateType.typeParameter){
 			ClassTemplate cTemplate = (ClassTemplate)_template;
 			if(cTemplate.properties() != null){
 				cTemplate.properties().forEach((t) -> {

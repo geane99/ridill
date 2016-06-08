@@ -16,6 +16,8 @@ public class TestGenericsTypeVariableUsePropertyTypeParameter<K,V> {
 	private K[][] array2;
 	private K[][][] array3;
 	private TestGenericsTypeVariable<K> domain;
+	private String string;
+	private K k;
 	public Map<K, V> getMap() {
 		return map;
 	}
@@ -69,5 +71,17 @@ public class TestGenericsTypeVariableUsePropertyTypeParameter<K,V> {
 	}
 	public void setDomain(TestGenericsTypeVariable<K> domain) {
 		this.domain = domain;
+	}
+	public String getString() {
+		return string;
+	}
+	public void setString(String string) {
+		this.string = string;
+	}
+	public K getK() {
+		return k;
+	}
+	public void setK(K k) {
+		this.k = k;
 	}
 }

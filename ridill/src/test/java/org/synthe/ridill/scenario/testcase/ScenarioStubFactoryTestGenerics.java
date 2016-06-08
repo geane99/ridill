@@ -592,9 +592,7 @@ public class ScenarioStubFactoryTestGenerics{
 		TestGenericsTypeVariable<TestGenericsTypeVariable2<String>> instance3 = instance.getDomain2();
 		assertThat(instance3.getString(), is(equalTo(generator.getString(null))));
 		TestGenericsTypeVariable2<String> instance4 = instance3.getFieldTypeVariable();
-		assertThat(instance4.getInteger(), is(equalTo(generator.getInteger(null))));
-		//直接指定されたTypeParameterは取れないのでnullになるはず
-		assertThat(instance4.getFieldTypeVariable(), is(equalTo(null)));
+		assertThat(instance4, is(equalTo(null)));
 	}
 	
 	@Test
@@ -669,8 +667,7 @@ public class ScenarioStubFactoryTestGenerics{
 		
 		assertThat(instance.getList2().size(), is(equalTo(generator.getCollectionSize(null))));
 		instance.getList2().forEach((each)->{
-			//setなので生成された同じ値しか入らないので1つのはず
-			assertThat(each.size(), is(equalTo(1)));
+			assertThat(each.size(), is(equalTo(generator.getCollectionSize(null))));
 			each.forEach(e2 -> {
 				testGenerateTestEntity(e2, generator);
 			});

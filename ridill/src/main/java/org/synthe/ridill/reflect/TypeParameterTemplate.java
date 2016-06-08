@@ -110,7 +110,7 @@ class TypeParameterTemplate extends ClassTemplate{
 	@Override
 	public void real(Template real){
 		super.real(real);
-		if(enclosing() != null)
+		if(template() != null)
 			_typeVariable = null;
 	}
 	

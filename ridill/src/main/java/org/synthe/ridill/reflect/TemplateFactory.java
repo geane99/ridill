@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -103,18 +104,7 @@ class TemplateFactory {
 			}
 		}
 
-		TypeVariable<?>[] parameters = clazz.getTypeParameters();
-		if(parameters != null){
-			for(TypeVariable<?> each : parameters){
-				Template param = createByTypeVariable(
-					template, 
-					each,
-					TemplateType.itsetfTypeParameters
-				);
-				template.addTypeParameter(param);
-			}
-		}
-		if(!template.isEmbedClass()){
+		if(!template.isEmbedClass() && !template.isEnum()){
 			List<Template> fields = createFieldTypeAll(template);
 			template.properties(fields);
 		}
@@ -222,7 +212,6 @@ class TemplateFactory {
 				}
 			}
 			classTypeParametersAll.put(now, classTypeParameters);
-			enclosing.addRealParameterizedTypes(enclosingClass,classTypeParameters);
 
 			List<Field> allFields = Arrays.asList(now.getDeclaredFields());
 
@@ -249,6 +238,7 @@ class TemplateFactory {
 						fieldClassType
 					);
 					fieldTemplate.enclosing(enclosing);
+					fieldTemplate.parameterizedTypes(classTypeParameters);
 
 					if(fieldTemplate.isArray()){
 						Template typeParameter = createArrayTypeParameter(
@@ -267,35 +257,45 @@ class TemplateFactory {
 						templates.add(fieldTemplate);
 					}
 					else{
-						TypeVariable<?>[] fieldClassTypeVariables = fieldClass.getTypeParameters();
-						if( fieldClassTypeVariables != null && 
-							fieldClassTypeVariables.length > 0 && 
-							!fieldTemplate.hasTypeParameters()
-						){
-							for(TypeVariable<?> fieldTypeVariable : fieldClassTypeVariables){
-								Template fieldTypeVariableTemplate = createByTypeVariable(
-									fieldTemplate, 
-									fieldTypeVariable,
-									TemplateType.propertyTypeParameters
-								);
-								
-								fieldTemplate.addTypeParameter(fieldTypeVariableTemplate);
-							}
-						}
-						else{
+						Boolean isTypeVariableProperty = fieldClass.equals(Object.class) && each.getGenericType() instanceof TypeVariable<?>;
+						if((!fieldTemplate.isEmbedClass() && !fieldTemplate.isEnum()) || isTypeVariableProperty){
 							Type type = each.getGenericType();
+							
 							Template typeTemplate = createByBaseType(
 								type,
 								fieldTemplate,
 								TemplateType.propertyTypeParameters
 							);
-//							fieldTemplate.typeParameters(new ArrayList<>());
-							
-							if(type instanceof ParameterizedType){
+							if(isTypeVariableProperty){
 								fieldTemplate.real(typeTemplate);
-							}
-							else
 								fieldTemplate.addTypeParameter(typeTemplate);
+								fieldTemplate.parameterizedTypes(classTypeParameters);
+							}
+							else if(type instanceof ParameterizedType){
+								if(fieldTemplate.isDomainClass()){
+									TypeVariable<?>[] tv = fieldTemplate.template().getTypeParameters();
+									Map<String, Template> parameterizedTypes = new HashMap<>();
+									for(int i = 0; i < tv.length; i++){
+										parameterizedTypes.put(tv[i].getTypeName(), typeTemplate.typeParameterAt(i));
+									}
+									fieldTemplate.real(typeTemplate);
+									parameterizedTypes.putAll(classTypeParameters);
+									fieldTemplate.parameterizedTypes(parameterizedTypes);
+									
+								}
+								else{
+									fieldTemplate.real(typeTemplate);
+									fieldTemplate.parameterizedTypes(classTypeParameters);
+								}
+							}
+							else if(type instanceof TypeVariable<?>){
+								fieldTemplate.addTypeParameter(typeTemplate);
+								fieldTemplate.parameterizedTypes(classTypeParameters);
+							}
+							else if(type instanceof Class<?>){
+								fieldTemplate.real(typeTemplate);
+								fieldTemplate.parameterizedTypes(classTypeParameters);
+							}
 						}
 						templates.add(fieldTemplate);
 					}
@@ -522,45 +522,52 @@ class TemplateFactory {
 			return;
 		target.properties().forEach(t -> {
 			reflectTypeVariables(t, rootEnclosing);
-			if(t.isObject() && t.hasTypeParameters())
+			if(t.template() == null && t.hasTypeParameters())
 				t.real(t.typeParameterAt(0));
 		});
 	}
 	
 	private void reflectTypeVariables(Template target, Template rootEnclosing){
 		if(target.hasTypeParameters() && target.hasTypeVariableParameter()){
+			AtomicInteger index = new AtomicInteger(0);
+			TypeVariable<?>[] typeVariableDefinitions = target.template() != null ? target.template().getTypeParameters() : null;
+			Map<String,Template> realParameterizedTypes = new HashMap<>();
 			target.typeParameters().forEach(t -> {
 				if(!target.hasTypeParameters()){
 					reflectTypeVariables(t, rootEnclosing);
 					return;
 				}
+				if(t instanceof ClassTemplate && t.hasTypeVariableParameter())
+					reflectTypeVariables(t, rootEnclosing);
 				
-				if(t instanceof TypeParameterTemplate){
-					TypeVariable<?> tv = ((TypeParameterTemplate)t).typeVariable();
-					if(tv != null){
-						Function<Template,Template> resolver = p -> {
-							Template enclosing = p;
-							Template real = null;
-							while(enclosing != null){
-								real = enclosing.findEnclosingParameterizedTypeByTypeVariable(t);
-								if(real != null)
-									break;
-								enclosing = enclosing.enclosing();
-							}
-							return real;
-						};
-						
-						Template real = resolver.apply(t);
-						if(real == null)
-							real = resolver.apply(target);
-						if(real == null)
-							real = resolver.apply(rootEnclosing);
-						
+				Function<Template,Template> resolver = p -> {
+					Template enclosing = p;
+					Template real = null;
+					while(enclosing != null){
+						real = enclosing.findEnclosingParameterizedTypeByTypeVariable(t);
 						if(real != null)
-							t.real(real);
+							break;
+						enclosing = enclosing.enclosing();
+					}
+					return real;
+				};
+				
+				Template real = resolver.apply(t);
+//				if(real == null)
+//					real = resolver.apply(target);
+//				if(real == null)
+//					real = resolver.apply(rootEnclosing);
+				
+				if(real != null){
+					t.real(real);
+					if(typeVariableDefinitions != null){
+						realParameterizedTypes.put(typeVariableDefinitions[index.get()].getTypeName(), real);
+						index.incrementAndGet();
 					}
 				}
+				
 			});
+			target.parameterizedTypes(realParameterizedTypes);
 		}
 		if(target instanceof ClassTemplate && ((ClassTemplate) target).hasProperty())
 			reflectClassTypeParameters((ClassTemplate)target, rootEnclosing);

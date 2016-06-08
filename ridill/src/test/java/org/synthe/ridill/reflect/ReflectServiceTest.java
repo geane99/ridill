@@ -4,7 +4,7 @@ import org.junit.Test;
 
 public class ReflectServiceTest {
 	@Test
-	public void test(){
+	public void test() throws NoSuchFieldException, SecurityException{
 		//see org.synthe.ridill.scenario.testcase.ScenarioStubFactoryTest
 	}
 }
