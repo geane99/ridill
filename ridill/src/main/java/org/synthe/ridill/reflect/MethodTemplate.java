@@ -27,7 +27,7 @@ class MethodTemplate extends PropertyTemplate{
 	 * @param returnTemplate {@link ClassTemplate}
 	 */
 	public MethodTemplate(Method method, ClassTemplate returnTemplate){
-		super(returnTemplate.template());
+		super(returnTemplate == null ? null : returnTemplate.template());
 		_method = method;
 		setAccessControl(_method);
 		override(returnTemplate);

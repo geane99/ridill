@@ -12,7 +12,7 @@ public class TestGenericsTypeVariableUsePropertyTypeParameterNest<K,V> extends T
 	private List<Set<K>> list2;
 	private Queue<Collection<K>> queue2;
 	private Collection<Queue<K>> collection2;
-	private TestGenericsTypeVariable<TestGenericsTypeVariable2<K>> domain2;
+	private TestGenericsTypeVariable<TestGenericsTypeVariableUsePropertyTypeParameter<K,V>> domain2;
 	public Map<List<K>, Set<V>> getMap2() {
 		return map2;
 	}
@@ -43,11 +43,10 @@ public class TestGenericsTypeVariableUsePropertyTypeParameterNest<K,V> extends T
 	public void setCollection2(Collection<Queue<K>> collection2) {
 		this.collection2 = collection2;
 	}
-	public TestGenericsTypeVariable<TestGenericsTypeVariable2<K>> getDomain2() {
+	public TestGenericsTypeVariable<TestGenericsTypeVariableUsePropertyTypeParameter<K,V>> getDomain2() {
 		return domain2;
 	}
-	public void setDomain2(
-			TestGenericsTypeVariable<TestGenericsTypeVariable2<K>> domain2) {
+	public void setDomain2(TestGenericsTypeVariable<TestGenericsTypeVariableUsePropertyTypeParameter<K,V>> domain2) {
 		this.domain2 = domain2;
 	}
 	

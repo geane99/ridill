@@ -14,7 +14,6 @@ import org.synthe.ridill.scenario.domain.TestEmbed;
 import org.synthe.ridill.scenario.domain.TestEntity;
 import org.synthe.ridill.scenario.domain.TestEnum;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariable;
-import org.synthe.ridill.scenario.domain.TestGenericsTypeVariable2;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableImpl;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestAsync;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableNestAsyncImpl;
@@ -28,6 +27,12 @@ import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableUsePropertyType
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableUsePropertyTypeParameterNest;
 import org.synthe.ridill.scenario.domain.TestGenericsTypeVariableUsePropertyTypeParameterNestImpl;
 import org.synthe.ridill.scenario.domain.TestInterface;
+import org.synthe.ridill.scenario.domain.TestInterfaceGenericsTypeVariable;
+import org.synthe.ridill.scenario.domain.TestInterfaceGenericsTypeVariableAsync;
+import org.synthe.ridill.scenario.domain.TestInterfaceGenericsTypeVariableAsyncImpl;
+import org.synthe.ridill.scenario.domain.TestInterfaceGenericsTypeVariableImpl;
+import org.synthe.ridill.scenario.domain.TestLocalClassGenericsTypeVariableUsePropertyTypeParameter;
+import org.synthe.ridill.scenario.domain.TestLocalClassGenericsTypeVariableUsePropertyTypeParameterImpl;
 import org.synthe.ridill.scenario.domain.TestPrimitive;
 import org.synthe.ridill.stub.StubFactory;
 import org.synthe.ridill.stub.TargetInfo;
@@ -589,10 +594,8 @@ public class ScenarioStubFactoryTestGenerics{
 			});
 		});
 		
-		TestGenericsTypeVariable<TestGenericsTypeVariable2<String>> instance3 = instance.getDomain2();
+		TestGenericsTypeVariable<TestGenericsTypeVariableUsePropertyTypeParameter<String,String>> instance3 = instance.getDomain2();
 		assertThat(instance3.getString(), is(equalTo(generator.getString(null))));
-		TestGenericsTypeVariable2<String> instance4 = instance3.getFieldTypeVariable();
-		assertThat(instance4, is(equalTo(null)));
 	}
 	
 	@Test
@@ -710,10 +713,84 @@ public class ScenarioStubFactoryTestGenerics{
 			});
 		});
 		
-		TestGenericsTypeVariable<TestGenericsTypeVariable2<TestEntity>> instance3 = instance.getDomain2();
+		TestGenericsTypeVariable<TestGenericsTypeVariableUsePropertyTypeParameter<TestEntity,TestEmbed>> instance3 = instance.getDomain2();
 		assertThat(instance3.getString(), is(equalTo(generator.getString(null))));
-		TestGenericsTypeVariable2<TestEntity> instance4 = instance3.getFieldTypeVariable();
-		assertThat(instance4.getInteger(), is(equalTo(generator.getInteger(null))));
-		testGenerateTestEntity(instance4.getFieldTypeVariable(), generator);
+		TestGenericsTypeVariableUsePropertyTypeParameter<TestEntity,TestEmbed> instance4 = instance3.getFieldTypeVariable();
+		assertThat(instance4.getString(), is(equalTo(generator.getString(null))));
+	}
+	
+	@Test
+	public void testLocalClassGenericsTypeVariableUsePropertyTypeParameter(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestLocalClassGenericsTypeVariableUsePropertyTypeParameter<String> instance = test.returnTestLocalClassGenericsTypeVariableUsePropertyTypeParameter();
+		assertThat(instance.getLocal().getGenerics(), is(equalTo(null)));
+	}
+	
+	@Test
+	public void testLocalClassGenericsTypeVariableUsePropertyTypeParameterImpl(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestLocalClassGenericsTypeVariableUsePropertyTypeParameterImpl instance = test.returnTestLocalClassGenericsTypeVariableUsePropertyTypeParameterImpl();
+		assertThat(instance.getLocal().getGenerics(), is(equalTo(generator.getString(null))));
+	}
+	
+	@Test
+	public void testInterfaceGenericsTypeVariable(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestInterfaceGenericsTypeVariable<String> instance = test.returnTestInterfaceGenericsTypeVariable();
+		List<String> list = instance.returnTypeVariableUseMethodParameterizedType();
+		assertThat(list.size(), is(equalTo(generator.getCollectionSize(null))));
+		list.forEach(t -> {
+			assertThat(t, is(equalTo(null)));
+		});
+		assertThat(instance.returnTypeVariable(), is(equalTo(null)));
+	}
+	@Test
+	public void testInterfaceGenericsTypeVariableAsync(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestInterfaceGenericsTypeVariableAsync<String> instance = test.returnTestInterfaceGenericsTypeVariableAsync();
+		List<String> list = instance.returnTypeVariableUseMethodParameterizedType();
+		assertThat(list.size(), is(equalTo(generator.getCollectionSize(null))));
+		list.forEach(t -> {
+			assertThat(t, is(equalTo(generator.getString(null))));
+		});
+		assertThat(instance.returnTypeVariable(), is(equalTo(generator.getString(null))));
+		assertThat(instance.returnAsyncTypeVariableAsync(), is(equalTo(null)));
+	}
+	
+	@Test
+	public void testInterfaceGenericsTypeVariableAsyncImpl(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestInterfaceGenericsTypeVariableAsyncImpl instance = test.returnTestInterfaceGenericsTypeVariableAsyncImpl();
+		List<String> list = instance.returnTypeVariableUseMethodParameterizedType();
+		assertThat(list.size(), is(equalTo(generator.getCollectionSize(null))));
+		list.forEach(t -> {
+			assertThat(t, is(equalTo(generator.getString(null))));
+		});
+		assertThat(instance.returnTypeVariable(), is(equalTo(generator.getString(null))));
+		assertThat(instance.returnAsyncTypeVariableAsync(), is(equalTo(generator.getString(null))));
+	}
+	
+	@Test
+	public void testInterfaceGenericsTypeVariableImpl(){
+		ValueGeneratorForGenericsTesting generator = new ValueGeneratorForGenericsTesting();
+		StubFactory factory = new StubFactory();
+		TestInterface test = factory.create(generator, TestInterface.class);
+		TestInterfaceGenericsTypeVariableImpl instance = test.returnTestInterfaceGenericsTypeVariableImpl();
+		List<TestEntity> list = instance.returnTypeVariableUseMethodParameterizedType();
+		assertThat(list.size(), is(equalTo(generator.getCollectionSize(null))));
+		list.forEach(t -> {
+			testGenerateTestEntity(t, generator);
+		});
+		testGenerateTestEntity(instance.returnTypeVariable(), generator);
 	}
 }

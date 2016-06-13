@@ -1,6 +1,5 @@
 package org.synthe.ridill.reflect;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -171,22 +170,8 @@ public class ReflectService {
 			return Proxy.newProxyInstance(
 				_loader, 
 				info.interfaces(), 
-				new _InnerInvocationHandlerImpl(adapter, depth)
+				new ProxyTemplate(adapter, depth, _loader, info._template)
 			);
-		}
-		
-		class _InnerInvocationHandlerImpl implements InvocationHandler{
-			private ReflectAdapter __adapter;
-			private Integer __depth;
-			_InnerInvocationHandlerImpl(ReflectAdapter adapter, Integer depth){
-				__adapter = adapter;
-				__depth = depth;
-			}
-			@Override
-			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-				ReflectService obj = new ReflectService(_loader, __adapter);
-				return obj.reflect(proxy, method, __depth, args);
-			}
 		}
 	}
 	
@@ -292,7 +277,7 @@ public class ReflectService {
 			
 			ClassInfo typeParamInfo = info.typeParameterAt(0);
 			for(int idx = 0; idx < size; idx++)
-				collection.add(_reflect(typeParamInfo, adapter, collection, depth+1));
+				collection.add(typeParamInfo == null ? null : _reflect(typeParamInfo, adapter, collection, depth+1));
 			
 			return collection;
 		}

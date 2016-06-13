@@ -97,6 +97,15 @@ abstract class Template{
 		return _parameterizedTypes.get(typeVariable.templateName());
 	}
 	/**
+	 * when has pairs generics definition, return true.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return when has pairs generics definition, return true.
+	 */
+	public Boolean hasParameterizedType(){
+		return _parameterizedTypes != null && _parameterizedTypes.size() > 0;
+	}
+	/**
 	 * set parameterizedTypes
 	 * @since 2015/01/18
 	 * @version 1.0.0
@@ -104,6 +113,15 @@ abstract class Template{
 	 */
 	public void parameterizedTypes(Map<String,Template> parameterizedTypes){
 		_parameterizedTypes = parameterizedTypes;
+	}
+	/**
+	 * get parameterizedTypes
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @return parameterizedType
+	 */
+	public Map<String,Template> parameterizedTypes(){
+		return _parameterizedTypes;
 	}
 	
 	/**
@@ -356,6 +374,8 @@ abstract class Template{
 	 * @return {@link Template}
 	 */
 	public Template typeParameterAt(Integer index){
+		if(_typeParameters == null || _typeParameters.size() <= index)
+			return null;
 		return _typeParameters.get(index);
 	}
 	/**

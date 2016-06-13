@@ -146,6 +146,8 @@ public class ClassInfo {
 	 */
 	public ClassInfo typeParameterAt(Integer idx){
 		Template t = _template.typeParameterAt(idx);
+		if(t == null)
+			return null;
 		ClassInfo typeInfo = t.toClassInfo();
 		return typeInfo;
 	}

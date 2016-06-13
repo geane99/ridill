@@ -12,7 +12,6 @@ public interface TestInterface {
 	public TestEnum returnTestEnum();
 	public <T> TestGenericsTypeVariable<T> returnTestGenericsTypeVariable();
 	public TestGenericsTypeVariableImpl returnTestGenericsTypeVariableImpl();
-	public <T> TestGenericsTypeVariable2<T> returnTestGenericsTypeVariable2();
 	public <T> TestGenericsTypeVariableNestAsync<T> returnTestGenericsTypeVariableNestAsync();
 	public TestGenericsTypeVariableNestAsyncImpl returnTestGenericsTypeVariableNestAsyncImpl();
 	public <T> TestGenericsTypeVariableNestSync<T> returnTestGenericsTypeVariableNestSync();
@@ -27,8 +26,14 @@ public interface TestInterface {
 	public TestInterface returnTestInterface();
 	public TestLocalClass returnTestLocalClass();
 	public <T> TestLocalClassGenericsTypeVariableUsePropertyTypeParameter<T> returnTestLocalClassGenericsTypeVariableUsePropertyTypeParameter();
+	public TestLocalClassGenericsTypeVariableUsePropertyTypeParameterImpl returnTestLocalClassGenericsTypeVariableUsePropertyTypeParameterImpl();
 	public TestPrimitive returnTestPrimitive();
 	public TestRecursiveStructure returnTestRecursiveStructure();
+	
+	public <T> TestInterfaceGenericsTypeVariable<T> returnTestInterfaceGenericsTypeVariable();
+	public <T> TestInterfaceGenericsTypeVariableAsync<T> returnTestInterfaceGenericsTypeVariableAsync();
+	public TestInterfaceGenericsTypeVariableAsyncImpl returnTestInterfaceGenericsTypeVariableAsyncImpl();
+	public TestInterfaceGenericsTypeVariableImpl returnTestInterfaceGenericsTypeVariableImpl();
 	
 	public List<String> returnGenericsParameterizedType();
 	public <T> T returnGenerics();

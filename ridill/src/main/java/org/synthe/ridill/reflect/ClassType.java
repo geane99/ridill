@@ -162,7 +162,7 @@ public enum ClassType {
 	 * @return {@link ClassType}
 	 */
 	public static ClassType get(Class<?> clazz){
-		if(clazz.getName().equals(Object.class.getName()))
+		if(clazz == null || clazz.getName().equals(Object.class.getName()))
 			return ClassType.objectType;
         if(String.class.equals(clazz))
             return ClassType.stringType;

@@ -1,6 +1,13 @@
 package org.synthe.ridill.scenario.domain;
 
-@SuppressWarnings("unused")
 public class TestLocalClassGenericsTypeVariableUsePropertyTypeParameterImpl extends TestLocalClassGenericsTypeVariableUsePropertyTypeParameter<String>{
 	private String string;
+
+	public String getString() {
+		return string;
+	}
+
+	public void setString(String string) {
+		this.string = string;
+	}
 }

@@ -2,6 +2,7 @@ package org.synthe.ridill.reflect;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -40,7 +41,7 @@ class TemplateFactory {
 				method.getDeclaringClass();
 
 		Template enclosingTemplate = createByClassType(enclosing, null);
-
+		
 		// return type is type parameter of class
 		if(typeParameter != null && typeParameter instanceof TypeVariable<?>){
 			TypeParameterTemplate typeParameterTemplate = (TypeParameterTemplate) createByTypeVariable(
@@ -56,17 +57,52 @@ class TemplateFactory {
 				return build(template);
 			} 
 			else{
+				if(typeParameterTemplate.isTypeVariableParameter()){
+					
+					Map<String,Template> store = getClassTypeParameters(instance, method);
+					real = (ClassTemplate)store.get(typeParameterTemplate.typeVariable().getTypeName());
+					if(real == null)
+						real = typeParameterTemplate;
+					MethodTemplate template = new MethodTemplate(method, real);
+					return build(template);
+				}
+				
 				MethodTemplate template = new MethodTemplate(method, typeParameterTemplate);
 				return build(template);
 			}
 		}
+		
+		//return type is class. however, return class needs type parameter. 
+		else if(typeParameter != null && typeParameter instanceof ParameterizedType){
+			ParameterizedType parameterizedType = (ParameterizedType)typeParameter;
+			Boolean hasTypeVariable = false;
+			for(Type type : parameterizedType.getActualTypeArguments()){
+				if(type instanceof TypeVariable<?>)
+					hasTypeVariable = true;
+			}
+			
+			ClassTemplate real = (ClassTemplate) createByClassType(returnType, enclosingTemplate);
+			MethodTemplate template = new MethodTemplate(method, real);
+
+			if(hasTypeVariable){
+				Map<String, Template> parameterizedTypes = getClassTypeParameters(instance, method);
+				template.parameterizedTypes(parameterizedTypes);
+				if(template.typeParameters() == null)
+					template.typeParameters(new ArrayList<>());
+				if(parameterizedTypes != null)
+					template.typeParameters().addAll(parameterizedTypes.values());
+			}
+			return build(template);
+		}
+		
+		//not need type parameter
 		else{
 			ClassTemplate real = (ClassTemplate) createByClassType(returnType, enclosingTemplate);
 			MethodTemplate template = new MethodTemplate(method, real);
 			return build(template);
 		}
 	}
-
+	
 	/**
 	 * Generate the {@link Template} from the {@link Class}
 	 * @since 2015/01/18
@@ -191,25 +227,7 @@ class TemplateFactory {
 			classTypeParametersAll.put(now, classTypeParameters);
 			//if contains typevariable, replace super(super->super...)'s parameterized type.
 			if(containTypeVariable(classTypeParameters)){
-				Map<String, Template> classTypeParametersNow = findClassTypeParameters(classTypeParameters);
-				for(Map.Entry<String, Template> each : classTypeParametersNow.entrySet()){
-					for(int i = inheritanceStructure.size() - 1; i >= 0; i--){
-						Class<?> parentClass = inheritanceStructure.get(i);
-						if(parentClass == null)
-							break;
-						Map<String, Template> classTypeParametersSuper = classTypeParametersAll.get(parentClass);
-						Template target = classTypeParametersSuper.get(each.getKey());
-						if(target != null){
-							if(target instanceof TypeParameterTemplate)
-								continue;
-							classTypeParameters.put(each.getKey(), target);
-							break;
-						}
-						else
-							break;
-					}
-					
-				}
+				replaceClassTypeParameters(classTypeParametersAll, classTypeParameters, inheritanceStructure);
 			}
 			classTypeParametersAll.put(now, classTypeParameters);
 
@@ -467,14 +485,14 @@ class TemplateFactory {
 	 * @version 1.0.0
 	 * @param now superclass
 	 * @param before baseclass
-	 * @return {@link Template}
+	 * @return {@link Map} key : type name(T, K, V, E...etc), value : {@link Template}
 	 */
 	private Map<String, Template> getClassTypeParameters(Class<?> now, Class<?> before){
 		Map<String, Template> classTypeParameters = new HashMap<String, Template>();
 
 		if(before != null){
 			Type superGenericsTypeParameter = before.getGenericSuperclass();
-
+			
 			if (superGenericsTypeParameter != null) {
 				TypeVariable<?>[] superGenericsTypeDifinition = now.getTypeParameters();
 				if (superGenericsTypeDifinition != null) {
@@ -512,33 +530,207 @@ class TemplateFactory {
 		return classTypeParameters;
 	}
 	
+	/**
+	 * Get a {@link Map} of generics name and type parameters of the class definition.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param enclosing enclosing of method
+	 * @param method target method
+	 * @return {@link Map} key : type name(T, K, V, E...etc), value : {@link Template}
+	 */
+	private Map<String,Template> getClassTypeParameters(Class<?> enclosing, Method method){
+		Class<?> now = enclosing;
+		Class<?> before = null;
+		
+		List<Class<?>> inheritanceStructure = new ArrayList<>();
+		Map<Class<?>, Map<String,Template>> classTypeParametersAll =
+			new HashMap<>();
+		
+		while (now != null && !now.equals(Object.class)) {
+			Map<String, Template> classTypeParameters = getInterfaceTypeParameters(now, before);
+			classTypeParametersAll.put(now, classTypeParameters);
+			//if contains typevariable, replace super(super->super...)'s parameterized type.
+			if(containTypeVariable(classTypeParameters)){
+				replaceClassTypeParameters(classTypeParametersAll, classTypeParameters, inheritanceStructure);
+			}
+			classTypeParametersAll.put(now, classTypeParameters);
+			
+			if(method.getDeclaringClass().equals(now)){
+				return classTypeParameters;
+			}
+			inheritanceStructure.add(now);
+			before = now;
+			now = before.getInterfaces().length > 0 ? now.getInterfaces()[0] : null;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get a {@link Map} of generics name and type parameters of the class definition.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param now superclass
+	 * @param before baseclass
+	 * @return {@link Map} key : type name(T, K, V, E...etc), value : {@link Template}
+	 */
+	private Map<String, Template> getInterfaceTypeParameters(Class<?> now, Class<?> before){
+		Map<String, Template> classTypeParameters = new HashMap<String, Template>();
+
+		if(before != null){
+			Type[] superGenericsTypeParameters = before.getGenericInterfaces();
+			Type superGenericsTypeParameter = superGenericsTypeParameters != null && superGenericsTypeParameters.length > 0 ? superGenericsTypeParameters[0] : null;
+			
+			if (superGenericsTypeParameter != null) {
+				TypeVariable<?>[] superGenericsTypeDifinition = now.getTypeParameters();
+				if (superGenericsTypeDifinition != null) {
+
+					int index = 0;
+					for(TypeVariable<?> each : superGenericsTypeDifinition){
+						Template superClassDifinition = createByClassType(
+							now,
+							null
+						);
+
+						Template superClassTypeParameterDifinisionTemplate = createByBaseType(
+							each, 
+							superClassDifinition,
+							TemplateType.itsetfTypeParameters
+						);
+
+						Template superGenericsTypeTemplate = createByBaseType(
+							superGenericsTypeParameter, 
+							null,
+							TemplateType.itsetfTypeParameters
+						);
+
+						Template pairClassTypeParameterParameterizedTypeTemplate = 
+							superGenericsTypeTemplate.typeParameterAt(index++);
+
+						classTypeParameters.put(
+							superClassTypeParameterDifinisionTemplate.templateName(),
+							pairClassTypeParameterParameterizedTypeTemplate
+						);
+					}
+				}
+			}
+		}
+		return classTypeParameters;
+	}
+
+	/**
+	 * Get a {@link Map} of generics name and type parameters of the class definition.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param instance object
+	 * @param method method
+	 * @return {@link Map} key : type name(T, K, V, E...etc), value : {@link Template}
+	 */
+	private Map<String,Template> getClassTypeParameters(Object instance, Method method){
+		Map<String,Template> parameterizedTypes = new HashMap<>();
+		
+		if(instance instanceof Proxy){
+			Proxy p = (Proxy)instance;
+			InvocationHandler handler = Proxy.getInvocationHandler(p);
+
+			if(handler instanceof ProxyTemplate){
+				ProxyTemplate proxyTemplate = (ProxyTemplate)handler;
+				Class<?> defineClass = proxyTemplate.findDefineByMethod(method);
+				
+				return getClassTypeParameters(defineClass, method);
+			}
+		}
+		return parameterizedTypes;
+	}
+	
+	/**
+	 * Replace TypeVariable to ParameterizedType.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param classTypeParametersAll a {@link Map} of generics name and type parameters of the class definition.
+	 * @param classTypeParameters a {@link Map} of generics name and type parameters of the class definition.
+	 * @param inheritanceStructure inheritance structures.
+	 */
+	private void replaceClassTypeParameters(Map<Class<?>,Map<String,Template>> classTypeParametersAll, Map<String,Template> classTypeParameters, List<Class<?>> inheritanceStructure){
+		Map<String, Template> classTypeParametersNow = findClassTypeParameters(classTypeParameters);
+		for(Map.Entry<String, Template> each : classTypeParametersNow.entrySet()){
+			for(int i = inheritanceStructure.size() - 1; i >= 0; i--){
+				Class<?> parentClass = inheritanceStructure.get(i);
+				if(parentClass == null)
+					break;
+				Map<String, Template> classTypeParametersSuper = classTypeParametersAll.get(parentClass);
+				Template target = classTypeParametersSuper.get(each.getKey());
+				if(target != null){
+					if(target instanceof TypeParameterTemplate)
+						continue;
+					classTypeParameters.put(each.getKey(), target);
+					break;
+				}
+				else
+					break;
+			}
+		}
+	}
+	/**
+	 * Change {@link Template} in ready state.
+	 * @param target {@link Template}
+	 * @return {@link Template target}
+	 */
 	private Template build(ClassTemplate target){
-		reflectClassTypeParameters(target, target);
+		reflectClassTypeParameters(target);
 		return target;
 	}
 	
-	private void reflectClassTypeParameters(ClassTemplate target, Template rootEnclosing){
+	/**
+	 * properties replace TypeVariabele to ParameterizedType.
+	 * @since 2015/01/18
+	 * @version 1.0.0
+	 * @param target {@link Template}
+	 */
+	private void reflectClassTypeParameters(ClassTemplate target){
 		if(!target.hasProperty())
 			return;
-		target.properties().forEach(t -> {
-			reflectTypeVariables(t, rootEnclosing);
-			if(t.template() == null && t.hasTypeParameters())
+		for(Template t : target.properties()){
+			reflectTypeVariables(t);
+			if(t.template() == null && t.hasTypeParameters()){
+				if(!t.hasParameterizedType()){
+					Template enclosingField = null;
+					Template self = target;
+					while(self != null){
+						if(self instanceof FieldTemplate){
+							enclosingField = self;
+							if(enclosingField.hasParameterizedType())
+								break;
+						}
+						self = self.enclosing();
+					}
+					if(enclosingField != null){
+						t.parameterizedTypes(enclosingField.parameterizedTypes());
+					}
+				}
 				t.real(t.typeParameterAt(0));
-		});
+				t.clearTypeParameters();
+			}
+			if(t instanceof ClassTemplate && ((ClassTemplate) t).hasProperty())
+				reflectClassTypeParameters((ClassTemplate)t);
+		}
 	}
 	
-	private void reflectTypeVariables(Template target, Template rootEnclosing){
+	private void reflectTypeVariables(Template target){
 		if(target.hasTypeParameters() && target.hasTypeVariableParameter()){
 			AtomicInteger index = new AtomicInteger(0);
 			TypeVariable<?>[] typeVariableDefinitions = target.template() != null ? target.template().getTypeParameters() : null;
 			Map<String,Template> realParameterizedTypes = new HashMap<>();
+			if(target.hasParameterizedType())
+				realParameterizedTypes.putAll(target.parameterizedTypes());
 			target.typeParameters().forEach(t -> {
 				if(!target.hasTypeParameters()){
-					reflectTypeVariables(t, rootEnclosing);
+					reflectTypeVariables(t);
 					return;
 				}
-				if(t instanceof ClassTemplate && t.hasTypeVariableParameter())
-					reflectTypeVariables(t, rootEnclosing);
+				if(t instanceof ClassTemplate && t.hasTypeVariableParameter()){
+					reflectTypeVariables(t);
+				}
 				
 				Function<Template,Template> resolver = p -> {
 					Template enclosing = p;
@@ -553,24 +745,22 @@ class TemplateFactory {
 				};
 				
 				Template real = resolver.apply(t);
-//				if(real == null)
-//					real = resolver.apply(target);
-//				if(real == null)
-//					real = resolver.apply(rootEnclosing);
+				if(real == null)
+					real = resolver.apply(target);
 				
 				if(real != null){
 					t.real(real);
 					if(typeVariableDefinitions != null){
-						realParameterizedTypes.put(typeVariableDefinitions[index.get()].getTypeName(), real);
-						index.incrementAndGet();
+						if(typeVariableDefinitions.length > index.get()){
+							realParameterizedTypes.put(typeVariableDefinitions[index.get()].getTypeName(), real);
+							index.incrementAndGet();
+						}
 					}
 				}
 				
 			});
 			target.parameterizedTypes(realParameterizedTypes);
 		}
-		if(target instanceof ClassTemplate && ((ClassTemplate) target).hasProperty())
-			reflectClassTypeParameters((ClassTemplate)target, rootEnclosing);
 	}
 	
 
